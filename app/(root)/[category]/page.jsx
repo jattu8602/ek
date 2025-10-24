@@ -18,10 +18,8 @@ export default function CategoryPage({ params }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    params.then((resolvedParams) => {
-      setCategory(resolvedParams.category)
-      setIsLoading(false)
-    })
+    setCategory(params.category)
+    setIsLoading(false)
   }, [params])
 
   if (isLoading) {

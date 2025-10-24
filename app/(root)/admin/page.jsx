@@ -129,186 +129,170 @@ export default function AdminDashboard() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-            <p className="text-muted-foreground">
-              Welcome back, {session.user.name}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="text-sm">
-              Admin
-            </Badge>
+    <div>
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <p className="text-muted-foreground">
+          Welcome back, {session.user.name}
+        </p>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {stats.map((stat, index) => (
+          <Card key={index}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {stat.title}
+              </CardTitle>
+              <stat.icon className={`h-4 w-4 ${stat.color}`} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stat.value}</div>
+              <p className="text-xs text-muted-foreground">
+                <span className="text-green-600">{stat.change}</span> from last
+                month
+              </p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Orders */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Recent Orders</CardTitle>
+              <CardDescription>Latest customer orders</CardDescription>
+            </div>
             <Button variant="outline" size="sm">
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
+              View All
             </Button>
-          </div>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
-            <Card key={index}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  {stat.title}
-                </CardTitle>
-                <stat.icon className={`h-4 w-4 ${stat.color}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground">
-                  <span className="text-green-600">{stat.change}</span> from
-                  last month
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Orders */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Recent Orders</CardTitle>
-                <CardDescription>Latest customer orders</CardDescription>
-              </div>
-              <Button variant="outline" size="sm">
-                View All
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentOrders.map((order) => (
-                  <div
-                    key={order.id}
-                    className="flex items-center justify-between p-3 border rounded-lg"
-                  >
-                    <div>
-                      <p className="font-medium">{order.id}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {order.customer}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">{order.amount}</p>
-                      <Badge
-                        variant={
-                          order.status === 'Completed' ? 'default' : 'secondary'
-                        }
-                        className="text-xs"
-                      >
-                        {order.status}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Product Management */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Product Management</CardTitle>
-                <CardDescription>Manage your inventory</CardDescription>
-              </div>
-              <Button size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Product
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentProducts.map((product) => (
-                  <div
-                    key={product.id}
-                    className="flex items-center justify-between p-3 border rounded-lg"
-                  >
-                    <div>
-                      <p className="font-medium">{product.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Stock: {product.stock} units
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        variant={
-                          product.status === 'Active'
-                            ? 'default'
-                            : 'destructive'
-                        }
-                        className="text-xs"
-                      >
-                        {product.status}
-                      </Badge>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Quick Actions */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Common administrative tasks</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Button
-                variant="outline"
-                className="h-20 flex flex-col items-center justify-center"
-              >
-                <Users className="h-6 w-6 mb-2" />
-                Manage Users
-              </Button>
-              <Button
-                variant="outline"
-                className="h-20 flex flex-col items-center justify-center"
-              >
-                <Package className="h-6 w-6 mb-2" />
-                Add Product
-              </Button>
-              <Button
-                variant="outline"
-                className="h-20 flex flex-col items-center justify-center"
-              >
-                <ShoppingCart className="h-6 w-6 mb-2" />
-                View Orders
-              </Button>
-              <Button
-                variant="outline"
-                className="h-20 flex flex-col items-center justify-center"
-              >
-                <TrendingUp className="h-6 w-6 mb-2" />
-                Analytics
-              </Button>
+            <div className="space-y-4">
+              {recentOrders.map((order) => (
+                <div
+                  key={order.id}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
+                  <div>
+                    <p className="font-medium">{order.id}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {order.customer}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-medium">{order.amount}</p>
+                    <Badge
+                      variant={
+                        order.status === 'Completed' ? 'default' : 'secondary'
+                      }
+                      className="text-xs"
+                    >
+                      {order.status}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Product Management */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Product Management</CardTitle>
+              <CardDescription>Manage your inventory</CardDescription>
+            </div>
+            <Button size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Product
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentProducts.map((product) => (
+                <div
+                  key={product.id}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
+                  <div>
+                    <p className="font-medium">{product.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Stock: {product.stock} units
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant={
+                        product.status === 'Active' ? 'default' : 'destructive'
+                      }
+                      className="text-xs"
+                    >
+                      {product.status}
+                    </Badge>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="sm">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Quick Actions */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+          <CardDescription>Common administrative tasks</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Button
+              variant="outline"
+              className="h-20 flex flex-col items-center justify-center"
+            >
+              <Users className="h-6 w-6 mb-2" />
+              Manage Users
+            </Button>
+            <Button
+              variant="outline"
+              className="h-20 flex flex-col items-center justify-center"
+            >
+              <Package className="h-6 w-6 mb-2" />
+              Add Product
+            </Button>
+            <Button
+              variant="outline"
+              className="h-20 flex flex-col items-center justify-center"
+            >
+              <ShoppingCart className="h-6 w-6 mb-2" />
+              View Orders
+            </Button>
+            <Button
+              variant="outline"
+              className="h-20 flex flex-col items-center justify-center"
+            >
+              <TrendingUp className="h-6 w-6 mb-2" />
+              Analytics
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
-

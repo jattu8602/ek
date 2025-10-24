@@ -20,19 +20,16 @@ import { useLanguage } from '@/contexts/LanguageContext'
 
 // Next.js passes 'params' as a prop
 export default function ProductDetail(params) {
-
   const { t } = useLanguage()
-  const [slug, setSlug] = useState<string>('')
+  const [slug, setSlug] = useState('')
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [selectedUnit, setSelectedUnit] = useState('')
   const [isLiked, setIsLiked] = useState(false)
 
-  // Handle async params in useEffect
+  // Handle params in useEffect
   useEffect(() => {
-    params.then((resolvedParams) => {
-      setSlug(resolvedParams.slug)
-    })
+    setSlug(params.slug)
   }, [params])
 
   // Find product based on slug

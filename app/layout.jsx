@@ -2,10 +2,7 @@ import { Inter } from 'next/font/google'
 import './globals.css' // Assuming you have a global CSS file
 
 import Providers from '@/components/Providers'
-import TopAnnouncementBar from '@/components/TopAnnouncementBar'
-import MainHeader from '@/components/MainHeader'
-import CategoryNavBar from '@/components/CategoryNavBar'
-import Footer from '@/components/Footer'
+import ConditionalLayout from '@/components/ConditionalLayout'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -19,15 +16,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={inter.className} suppressHydrationWarning={true}>
         <Providers>
-          <div className="flex flex-col min-h-screen">
-            <header>
-              <TopAnnouncementBar />
-              <MainHeader />
-              <CategoryNavBar />
-            </header>
-            <main className="flex-grow">{children}</main>
-            <Footer />
-          </div>
+          <ConditionalLayout>{children}</ConditionalLayout>
         </Providers>
       </body>
     </html>
