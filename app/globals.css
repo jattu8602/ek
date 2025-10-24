@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+
 :root {
   /* Core Colors */
   --color-background: oklch(100% 0 0);
