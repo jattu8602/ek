@@ -1,177 +1,156 @@
-'use client' // Mark this as a Client Component to use hooks
+'use client'
 
-import { useState, useEffect } from 'react'
-import Image from 'next/image' // For optimized images
-import Link from 'next/link' // For optimized navigation
+import { useState } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { Heart, ShoppingCart, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Heart, Share2, Star, Minus, Plus } from 'lucide-react'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Product } from '@/data/products'
+import { Badge } from '@/components/ui/badge'
+import { useCart } from '@/contexts/CartContext'
+import { useAuth } from '@/contexts/AuthContext'
+import { useLanguage } from '@/contexts/LanguageContext'
 
-
-const ProductCard = ({ product }) => {
+export default function ProductCard({ product }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [quantity, setQuantity] = useState(1)
-  const [selectedUnit, setSelectedUnit] = useState(product.units[0])
-  const [isLiked, setIsLiked] = useState(false)
+  const { addToCart, addToFavorites, removeFromFavorites, isInFavorites } =
+    useCart()
+  const { requireAuth } = useAuth()
+  const { t } = useLanguage()
 
-  // Auto-slide carousel effect remains the same
-  useEffect(() => {
+  const handleAddToCart = () => {
+    requireAuth(() => {
+      addToCart(product.id, 1)
+    })
+  }
+
+  const handleToggleFavorite = () => {
+    requireAuth(() => {
+      if (isInFavorites(product.id)) {
+        removeFromFavorites(product.id)
+      } else {
+        addToFavorites(product.id)
+      }
+    })
+  }
+
+  const handleImageClick = () => {
     if (product.images.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentImageIndex((prev) => (prev + 1) % product.images.length)
-      }, 3000)
-      return () => clearInterval(interval)
+      setCurrentImageIndex((prev) => (prev + 1) % product.images.length)
     }
-  }, [product.images.length])
-
-  const handleQuantityChange = (delta) => {
-    setQuantity(Math.max(1, quantity + delta))
   }
 
   return (
-    <div className="bg-card rounded-lg shadow-md overflow-hidden product-card-hover border border-border">
-      {/* Image Container: Replaced 'to' with 'href' */}
-      <Link
-        href={`/product/${product.urlSlug}`}
-        className="block relative aspect-square overflow-hidden bg-muted group"
-      >
-        {/* Replaced <img> with next/image <Image> for performance */}
+    <div className="group relative bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 product-card-hover">
+      {/* Product Image */}
+      <div className="relative aspect-square overflow-hidden">
         <Image
           src={product.images[currentImageIndex]}
           alt={product.name}
           fill
-          className="object-cover transition-transform group-hover:scale-105"
-          sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          onClick={handleImageClick}
         />
 
         {/* Discount Badge */}
         {product.discountPercent > 0 && (
-          <div className="absolute top-2 left-2 bg-accent text-accent-foreground px-2 py-1 rounded text-xs font-bold">
-            -{product.discountPercent}%
-          </div>
+          <Badge className="absolute top-2 left-2 bg-red-500 text-white">
+            {product.discountPercent}% {t('product.off')}
+          </Badge>
         )}
 
-        {/* Like Button */}
-        <button
-          onClick={(e) => {
-            e.preventDefault() // Prevents link navigation
-            setIsLiked(!isLiked)
-          }}
-          className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm p-2 rounded-full hover:bg-background transition-colors"
+        {/* Favorite Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="absolute top-2 right-2 bg-white/80 hover:bg-white"
+          onClick={handleToggleFavorite}
         >
           <Heart
-            size={16}
-            className={
-              isLiked ? 'fill-primary text-primary' : 'text-muted-foreground'
-            }
+            className={`h-4 w-4 ${
+              isInFavorites(product.id)
+                ? 'fill-red-500 text-red-500'
+                : 'text-gray-600'
+            }`}
           />
-        </button>
+        </Button>
 
-        {/* Share Button */}
-        <button
-          onClick={(e) => {
-            e.preventDefault() // Prevents link navigation
-          }}
-          className="absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm p-2 rounded-full hover:bg-background transition-colors"
-        >
-          <Share2 size={16} className="text-muted-foreground" />
-        </button>
+        {/* Quick Add to Cart Button */}
+        <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <Button
+            size="sm"
+            className="w-full bg-primary hover:bg-primary/90 text-white"
+            onClick={handleAddToCart}
+          >
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            {t('product.addToCart')}
+          </Button>
+        </div>
+      </div>
 
-        {/* Image indicators */}
-        {product.images.length > 1 && (
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-            {product.images.map((_, idx) => (
-              <div
-                key={idx}
-                className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                  idx === currentImageIndex ? 'bg-primary' : 'bg-background/50'
-                }`}
-              />
-            ))}
-          </div>
-        )}
-      </Link>
-
-      {/* Info Container */}
-      <div className="p-4 space-y-3">
-        {/* Replaced 'to' with 'href' */}
+      {/* Product Info */}
+      <div className="p-4">
+        {/* Product Name */}
         <Link href={`/product/${product.urlSlug}`}>
-          <h3 className="font-semibold text-sm line-clamp-2 hover:text-primary transition-colors">
+          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-primary transition-colors">
             {product.name}
           </h3>
         </Link>
 
         {/* Rating */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 mb-2">
           <div className="flex items-center">
-            <Star size={14} className="fill-accent text-accent" />
-            <span className="ml-1 text-sm font-medium">{product.rating}</span>
+            {[...Array(5)].map((_, i) => (
+              <Star
+                key={i}
+                className={`h-4 w-4 ${
+                  i < Math.floor(product.rating)
+                    ? 'text-yellow-400 fill-yellow-400'
+                    : 'text-gray-300'
+                }`}
+              />
+            ))}
           </div>
-          <span className="text-xs text-muted-foreground">
-            ({product.reviewCount} Reviews)
+          <span className="text-sm text-gray-600 ml-1">
+            ({product.reviewCount})
           </span>
         </div>
 
         {/* Price */}
-        <div className="flex items-baseline gap-2">
-          <span className="text-xl font-bold text-primary">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-lg font-bold text-gray-900">
             ₹{product.discountedPrice}
           </span>
-          <span className="text-sm text-muted-foreground line-through">
-            ₹{product.actualPrice}
-          </span>
+          {product.discountPercent > 0 && (
+            <span className="text-sm text-gray-500 line-through">
+              ₹{product.actualPrice}
+            </span>
+          )}
         </div>
 
-        {/* Unit Selector */}
-        <Select value={selectedUnit} onValueChange={setSelectedUnit}>
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="bg-popover z-50">
-            {product.units.map((unit) => (
-              <SelectItem key={unit} value={unit}>
-                {unit}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Quantity Selector */}
-        <div className="flex items-center justify-center gap-2 bg-muted rounded-md p-1">
-          <button
-            onClick={() => handleQuantityChange(-1)}
-            className="p-1 hover:bg-background rounded transition-colors"
-          >
-            <Minus size={16} />
-          </button>
-          <span className="min-w-8 text-center font-medium">{quantity}</span>
-          <button
-            onClick={() => handleQuantityChange(1)}
-            className="p-1 hover:bg-background rounded transition-colors"
-          >
-            <Plus size={16} />
-          </button>
+        {/* Category */}
+        <div className="text-sm text-gray-600 mb-3">
+          <span className="font-medium">{t('product.category')}:</span>{' '}
+          {product.category}
         </div>
 
-        {/* Buttons */}
-        <div className="grid grid-cols-2 gap-2">
-          <Button size="sm" variant="outline" className="w-full">
-            Add to Cart
+        {/* Action Buttons */}
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            onClick={handleAddToCart}
+          >
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            {t('product.addToCart')}
           </Button>
-          <Button size="sm" className="w-full">
-            Buy Now
-          </Button>
+          <Link href={`/product/${product.urlSlug}`}>
+            <Button size="sm" className="flex-1">
+              {t('product.buyNow')}
+            </Button>
+          </Link>
         </div>
       </div>
     </div>
   )
 }
-
-export default ProductCard

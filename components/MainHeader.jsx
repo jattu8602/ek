@@ -7,6 +7,7 @@ import {
   LogOut,
   Settings,
   Shield,
+  Heart,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,8 +21,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useSession } from 'next-auth/react'
-import { signOut } from '@/lib/auth'
+import { useSession, signOut } from 'next-auth/react'
 
 const MainHeader = () => {
   const { data: session, status } = useSession()
@@ -101,13 +101,19 @@ const MainHeader = () => {
                   <DropdownMenuItem asChild>
                     <Link href="/profile">
                       <User className="mr-2 h-4 w-4" />
-                      Profile
+                      My Profile
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/orders">
+                    <Link href="/profile?section=cart">
                       <ShoppingCart className="mr-2 h-4 w-4" />
-                      Orders
+                      My Cart
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile?section=favorites">
+                      <Heart className="mr-2 h-4 w-4" />
+                      Favorites
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>

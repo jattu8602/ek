@@ -7,6 +7,8 @@ import { Toaster as Sonner } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { LanguageProvider } from '@/contexts/LanguageContext'
+import { AuthProvider } from '@/contexts/AuthContext'
+import { CartProvider } from '@/contexts/CartContext'
 
 export default function Providers({ children }) {
   const [queryClient] = useState(() => new QueryClient())
@@ -15,11 +17,15 @@ export default function Providers({ children }) {
     <SessionProvider>
       <QueryClientProvider client={queryClient}>
         <LanguageProvider>
-          <TooltipProvider>
-            {children}
-            <Toaster />
-            <Sonner />
-          </TooltipProvider>
+          <AuthProvider>
+            <CartProvider>
+              <TooltipProvider>
+                {children}
+                <Toaster />
+                <Sonner />
+              </TooltipProvider>
+            </CartProvider>
+          </AuthProvider>
         </LanguageProvider>
       </QueryClientProvider>
     </SessionProvider>

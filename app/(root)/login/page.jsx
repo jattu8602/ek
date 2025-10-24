@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { signIn } from 'next-auth/react'
+import { useState, useEffect } from 'react'
+import { signIn, getSession, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -25,6 +25,18 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const { data: session, status } = useSession()
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (status === 'authenticated' && session) {
+      if (session.user?.role === 'ADMIN') {
+        router.push('/admin')
+      } else {
+        router.push('/')
+      }
+    }
+  }, [session, status, router])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -52,12 +64,108 @@ export default function LoginPage() {
     setError('')
 
     try {
-      await signIn('google', { callbackUrl: '/' })
+      const result = await signIn('google', {
+        callbackUrl: '/',
+        redirect: false,
+      })
+
+      if (result?.error) {
+        console.error('Google sign in error:', result.error)
+        if (result.error === 'OAuthAccountNotLinked') {
+          setError(
+            'This Google account is not linked to any user account. Please contact support or try a different account.'
+          )
+        } else if (result.error === 'OAuthCallback') {
+          setError(
+            'OAuth callback error. Please check your Google OAuth configuration.'
+          )
+        } else {
+          setError(`Failed to sign in with Google: ${result.error}`)
+        }
+      } else if (result?.ok) {
+        // Get the session to check user role
+        const session = await getSession()
+        console.log('Login successful, redirecting...', {
+          role: session?.user?.role,
+        })
+        if (session?.user?.role === 'ADMIN') {
+          router.push('/admin')
+        } else {
+          router.push('/')
+        }
+      }
     } catch (err) {
+      console.error('Google sign in error:', err)
       setError('Failed to sign in with Google. Please try again.')
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Show loading state while checking authentication
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <Card>
+            <CardContent className="flex items-center justify-center py-8">
+              <div className="text-center">
+                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-muted-foreground">
+                  Checking authentication...
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  // Show already logged in message
+  if (status === 'authenticated') {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <Card>
+            <CardContent className="flex items-center justify-center py-8">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg
+                    className="w-6 h-6 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">
+                  Already logged in!
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  You are already signed in as{' '}
+                  {session?.user?.name || session?.user?.email}
+                </p>
+                <div className="space-y-2">
+                  <Button asChild className="w-full">
+                    <Link href="/">Go to Home</Link>
+                  </Button>
+                  <Button asChild variant="outline" className="w-full">
+                    <Link href="/profile">View Profile</Link>
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
   }
 
   return (
