@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -23,7 +23,7 @@ import {
   ArrowLeft,
 } from 'lucide-react'
 
-const ProfilePage = () => {
+const ProfileContent = () => {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -439,6 +439,20 @@ const ProfilePage = () => {
         </div>
       </div>
     </div>
+  )
+}
+
+const ProfilePage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      }
+    >
+      <ProfileContent />
+    </Suspense>
   )
 }
 
