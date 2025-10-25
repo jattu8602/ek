@@ -1,6 +1,5 @@
 import { Inter } from 'next/font/google'
 import './globals.css' // Assuming you have a global CSS file
-import { Analytics } from '@vercel/analytics/react'
 
 import Providers from '@/components/Providers'
 import ConditionalLayout from '@/components/ConditionalLayout'
@@ -19,7 +18,6 @@ export default function RootLayout({ children }) {
         <Providers>
           <ConditionalLayout>{children}</ConditionalLayout>
         </Providers>
-        <Analytics />
       </body>
     </html>
   )
