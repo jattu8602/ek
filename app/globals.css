@@ -131,6 +131,20 @@
   h6 {
     @apply font-semibold tracking-tight;
   }
+
+  /* Remove focus outlines from all input elements */
+  input:focus,
+  textarea:focus,
+  select:focus,
+  button:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Remove focus ring from shadcn components */
+  [data-radix-focus-guard] {
+    outline: none !important;
+  }
 }
 
 @layer utilities {
