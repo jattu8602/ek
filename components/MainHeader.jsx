@@ -24,10 +24,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
+import { useCart } from '@/contexts/CartContext'
 import SearchCommandPalette from '@/components/SearchCommandPalette'
 
 const MainHeader = ({ isSticky = false }) => {
   const { data: session, status } = useSession()
+  const { getCartItemsCount } = useCart()
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const searchRef = useRef(null)
@@ -246,13 +248,15 @@ const MainHeader = ({ isSticky = false }) => {
             >
               Sell with us
             </Button>
-            <Button variant="default" size="sm" className="relative">
-              <ShoppingCart size={18} className="mr-1" />
-              <span className="hidden md:inline">Cart</span>
-              <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                0
-              </span>
-            </Button>
+            <Link href="/cart">
+              <Button variant="default" size="sm" className="relative">
+                <ShoppingCart size={18} className="mr-1" />
+                <span className="hidden md:inline">Cart</span>
+                <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                  {getCartItemsCount()}
+                </span>
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

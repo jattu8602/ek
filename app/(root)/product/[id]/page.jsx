@@ -25,17 +25,20 @@ import {
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useCart } from '@/contexts/CartContext'
 import { addRecentProduct } from '@/lib/recentProducts'
 
 export default function ProductDetail({ params }) {
   const router = useRouter()
   const { t } = useLanguage()
+  const { addToCart, isInCart, getCartQuantity } = useCart()
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [selectedUnit, setSelectedUnit] = useState('')
   const [isLiked, setIsLiked] = useState(false)
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [addingToCart, setAddingToCart] = useState(false)
 
   // Get the ID directly from params
   const id = params.id
@@ -129,13 +132,26 @@ export default function ProductDetail({ params }) {
     (unit) => `${unit.number} ${unit.type}` === selectedUnit
   )
 
-  const handleAddToCart = () => {
-    // Add to cart logic
-    console.log('Adding to cart:', {
-      productId: product.id,
-      quantity,
-      unit: selectedUnit,
-    })
+  const handleAddToCart = async () => {
+    if (!product) return
+    
+    setAddingToCart(true)
+    try {
+      const selectedUnitData = product.units?.find(
+        (unit) => `${unit.number} ${unit.type}` === selectedUnit
+      )
+      
+      await addToCart(
+        product.id,
+        quantity,
+        selectedUnitData?.id,
+        selectedUnit
+      )
+    } catch (error) {
+      console.error('Error adding to cart:', error)
+    } finally {
+      setAddingToCart(false)
+    }
   }
 
   return (
@@ -306,9 +322,14 @@ export default function ProductDetail({ params }) {
 
               {/* Action Buttons */}
               <div className="flex gap-4">
-                <Button size="lg" className="flex-1" onClick={handleAddToCart}>
+                <Button 
+                  size="lg" 
+                  className="flex-1" 
+                  onClick={handleAddToCart}
+                  disabled={addingToCart}
+                >
                   <ShoppingCart className="mr-2 h-4 w-4" />
-                  Add to Cart
+                  {addingToCart ? 'Adding...' : isInCart(product.id) ? 'Added to Cart' : 'Add to Cart'}
                 </Button>
                 <Button
                   size="lg"

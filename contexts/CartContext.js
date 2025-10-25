@@ -3,12 +3,14 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useAuth } from './AuthContext'
+import { useToast } from '@/hooks/use-toast'
 
 const CartContext = createContext()
 
 export function CartProvider({ children }) {
   const { data: session } = useSession()
   const { user, requireAuth } = useAuth()
+  const { toast } = useToast()
   const [cartItems, setCartItems] = useState([])
   const [favorites, setFavorites] = useState([])
   const [isLoading, setIsLoading] = useState(false)
@@ -79,11 +81,20 @@ export function CartProvider({ children }) {
 
           if (response.ok) {
             fetchCartItems() // Refresh cart
+            toast({
+              title: 'Added to cart',
+              description: 'Item has been added to your cart successfully.',
+            })
           } else {
             throw new Error('Failed to add item to cart')
           }
         } catch (error) {
           console.error('Error adding to cart:', error)
+          toast({
+            title: 'Error',
+            description: 'Failed to add item to cart. Please try again.',
+            variant: 'destructive',
+          })
         }
       }
       addItem()
@@ -105,9 +116,18 @@ export function CartProvider({ children }) {
 
       if (response.ok) {
         fetchCartItems() // Refresh cart
+        toast({
+          title: 'Removed from cart',
+          description: 'Item has been removed from your cart.',
+        })
       }
     } catch (error) {
       console.error('Error removing from cart:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to remove item from cart. Please try again.',
+        variant: 'destructive',
+      })
     }
   }
 
@@ -131,9 +151,18 @@ export function CartProvider({ children }) {
 
       if (response.ok) {
         fetchCartItems() // Refresh cart
+        toast({
+          title: 'Cart updated',
+          description: 'Item quantity has been updated.',
+        })
       }
     } catch (error) {
       console.error('Error updating cart quantity:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to update cart. Please try again.',
+        variant: 'destructive',
+      })
     }
   }
 
