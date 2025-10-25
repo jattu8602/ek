@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Card,
   CardContent,
@@ -16,14 +17,29 @@ import {
 } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Eye, EyeOff, Mail, Lock, ArrowLeft } from 'lucide-react'
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  User,
+  ArrowLeft,
+  CheckCircle,
+} from 'lucide-react'
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+export default function RegisterPage() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    terms: false,
+  })
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
   const router = useRouter()
   const { data: session, status } = useSession()
 
@@ -38,49 +54,80 @@ export default function LoginPage() {
     }
   }, [session, status, router])
 
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }))
+    // Clear error when user starts typing
+    if (error) setError('')
+  }
+
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      setError('Name is required')
+      return false
+    }
+    if (!formData.email.trim()) {
+      setError('Email is required')
+      return false
+    }
+    if (!formData.password) {
+      setError('Password is required')
+      return false
+    }
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters long')
+      return false
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match')
+      return false
+    }
+    if (!formData.terms) {
+      setError('Please accept the terms and conditions')
+      return false
+    }
+    return true
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    if (!validateForm()) return
+
     setIsLoading(true)
     setError('')
 
     try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          password: formData.password,
+        }),
       })
 
-      if (result?.error) {
-        if (result.error === 'Email not verified') {
-          setError(
-            'Please verify your email address before signing in. Check your email for a verification link.'
-          )
-        } else if (result.error === 'CredentialsSignin') {
-          setError('Invalid email or password. Please try again.')
-        } else {
-          setError(`Sign in failed: ${result.error}`)
-        }
-      } else if (result?.ok) {
-        // Get the session to check user role
-        const session = await getSession()
-        console.log('Login successful, redirecting...', {
-          role: session?.user?.role,
-        })
-        if (session?.user?.role === 'ADMIN') {
-          router.push('/admin')
-        } else {
-          router.push('/')
-        }
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Registration failed')
       }
+
+      setSuccess(true)
     } catch (err) {
-      console.error('Login error:', err)
-      setError('An error occurred during sign in. Please try again.')
+      setError(err.message || 'Registration failed. Please try again.')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignUp = async () => {
     setIsLoading(true)
     setError('')
 
@@ -91,7 +138,7 @@ export default function LoginPage() {
       })
 
       if (result?.error) {
-        console.error('Google sign in error:', result.error)
+        console.error('Google sign up error:', result.error)
         if (result.error === 'OAuthAccountNotLinked') {
           setError(
             'This Google account is not linked to any user account. Please contact support or try a different account.'
@@ -101,12 +148,12 @@ export default function LoginPage() {
             'OAuth callback error. Please check your Google OAuth configuration.'
           )
         } else {
-          setError(`Failed to sign in with Google: ${result.error}`)
+          setError(`Failed to sign up with Google: ${result.error}`)
         }
       } else if (result?.ok) {
         // Get the session to check user role
         const session = await getSession()
-        console.log('Login successful, redirecting...', {
+        console.log('Sign up successful, redirecting...', {
           role: session?.user?.role,
         })
         if (session?.user?.role === 'ADMIN') {
@@ -116,8 +163,8 @@ export default function LoginPage() {
         }
       }
     } catch (err) {
-      console.error('Google sign in error:', err)
-      setError('Failed to sign in with Google. Please try again.')
+      console.error('Google sign up error:', err)
+      setError('Failed to sign up with Google. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -152,19 +199,7 @@ export default function LoginPage() {
             <CardContent className="flex items-center justify-center py-8">
               <div className="text-center">
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    className="w-6 h-6 text-green-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
+                  <CheckCircle className="w-6 h-6 text-green-600" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">
                   Already logged in!
@@ -179,6 +214,40 @@ export default function LoginPage() {
                   </Button>
                   <Button asChild variant="outline" className="w-full">
                     <Link href="/profile">View Profile</Link>
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  // Show success message after registration
+  if (success) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <Card>
+            <CardContent className="flex items-center justify-center py-8">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-6 h-6 text-green-600" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">
+                  Registration Successful!
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  Please check your email and click the verification link to
+                  activate your account.
+                </p>
+                <div className="space-y-2">
+                  <Button asChild className="w-full">
+                    <Link href="/login">Go to Login</Link>
+                  </Button>
+                  <Button asChild variant="outline" className="w-full">
+                    <Link href="/">Back to Home</Link>
                   </Button>
                 </div>
               </div>
@@ -204,9 +273,11 @@ export default function LoginPage() {
 
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
+            <CardTitle className="text-2xl font-bold">
+              Create an account
+            </CardTitle>
             <CardDescription>
-              Sign in to your account to continue shopping
+              Sign up to start shopping for agricultural products
             </CardDescription>
           </CardHeader>
 
@@ -219,15 +290,33 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="name"
+                    name="name"
+                    type="text"
+                    placeholder="Enter your full name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className="pl-10"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="email"
+                    name="email"
                     type="email"
                     placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={formData.email}
+                    onChange={handleInputChange}
                     className="pl-10"
                     required
                   />
@@ -240,38 +329,88 @@ export default function LoginPage() {
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="password"
+                    name="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Create a password"
+                    value={formData.password}
+                    onChange={handleInputChange}
                     className="pl-10 pr-10"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                    className="absolute right-3 top-3 h-4 w-4 text-muted-foreground hover:text-foreground"
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
+                    {showPassword ? <EyeOff /> : <Eye />}
                   </button>
                 </div>
+                {formData.password && (
+                  <p className="text-xs text-muted-foreground">
+                    {formData.password.length < 8
+                      ? 'Password must be at least 8 characters long'
+                      : 'Password looks good!'}
+                  </p>
+                )}
               </div>
 
-              <div className="flex items-center justify-between">
-                <Link
-                  href="/forgot-password"
-                  className="text-sm text-primary hover:underline"
-                >
-                  Forgot password?
-                </Link>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="Confirm your password"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    className="pl-10 pr-10"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-3 h-4 w-4 text-muted-foreground hover:text-foreground"
+                  >
+                    {showConfirmPassword ? <EyeOff /> : <Eye />}
+                  </button>
+                </div>
+                {formData.confirmPassword && (
+                  <p className="text-xs text-muted-foreground">
+                    {formData.password !== formData.confirmPassword
+                      ? 'Passwords do not match'
+                      : 'Passwords match!'}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="terms"
+                  name="terms"
+                  checked={formData.terms}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({ ...prev, terms: checked }))
+                  }
+                />
+                <Label htmlFor="terms" className="text-sm">
+                  I agree to the{' '}
+                  <Link href="/terms" className="text-primary hover:underline">
+                    Terms and Conditions
+                  </Link>{' '}
+                  and{' '}
+                  <Link
+                    href="/privacy"
+                    className="text-primary hover:underline"
+                  >
+                    Privacy Policy
+                  </Link>
+                </Label>
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Signing in...' : 'Sign in'}
+                {isLoading ? 'Creating account...' : 'Create account'}
               </Button>
             </form>
 
@@ -289,7 +428,7 @@ export default function LoginPage() {
             <Button
               variant="outline"
               className="w-full"
-              onClick={handleGoogleSignIn}
+              onClick={handleGoogleSignUp}
               disabled={isLoading}
             >
               <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
@@ -314,9 +453,9 @@ export default function LoginPage() {
             </Button>
 
             <div className="text-center text-sm">
-              Don't have an account?{' '}
-              <Link href="/register" className="text-primary hover:underline">
-                Sign up
+              Already have an account?{' '}
+              <Link href="/login" className="text-primary hover:underline">
+                Sign in
               </Link>
             </div>
           </CardContent>

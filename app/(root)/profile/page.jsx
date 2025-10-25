@@ -5,6 +5,8 @@ import { useSession, signOut } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -21,6 +23,10 @@ import {
   MapPin,
   Edit,
   ArrowLeft,
+  Lock,
+  Eye,
+  EyeOff,
+  CheckCircle,
 } from 'lucide-react'
 
 const ProfileContent = () => {
@@ -31,6 +37,33 @@ const ProfileContent = () => {
   const [cartItems, setCartItems] = useState([])
   const [favorites, setFavorites] = useState([])
   const [isLoading, setIsLoading] = useState(false)
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  })
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  })
+  const [passwordError, setPasswordError] = useState('')
+  const [passwordSuccess, setPasswordSuccess] = useState('')
+  const [isPasswordLoading, setIsPasswordLoading] = useState(false)
+  const [personalForm, setPersonalForm] = useState({
+    name: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    pincode: '',
+    landmark: '',
+  })
+  const [personalError, setPersonalError] = useState('')
+  const [personalSuccess, setPersonalSuccess] = useState('')
+  const [isPersonalLoading, setIsPersonalLoading] = useState(false)
+  const [userAddress, setUserAddress] = useState(null)
+  const [isResendingVerification, setIsResendingVerification] = useState(false)
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -55,6 +88,17 @@ const ProfileContent = () => {
     if (session) {
       fetchCartItems()
       fetchFavorites()
+      fetchUserAddress()
+      // Initialize personal form with user data
+      setPersonalForm({
+        name: session.user?.name || '',
+        phone: '',
+        address: '',
+        city: '',
+        state: '',
+        pincode: '',
+        landmark: '',
+      })
     }
   }, [session])
 
@@ -82,6 +126,30 @@ const ProfileContent = () => {
     }
   }
 
+  const fetchUserAddress = async () => {
+    try {
+      const response = await fetch('/api/user/addresses')
+      if (response.ok) {
+        const data = await response.json()
+        const defaultAddress = data.addresses?.find((addr) => addr.isDefault)
+        if (defaultAddress) {
+          setUserAddress(defaultAddress)
+          setPersonalForm((prev) => ({
+            ...prev,
+            phone: defaultAddress.phone || '',
+            address: defaultAddress.address || '',
+            city: defaultAddress.city || '',
+            state: defaultAddress.state || '',
+            pincode: defaultAddress.pincode || '',
+            landmark: defaultAddress.landmark || '',
+          }))
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user address:', error)
+    }
+  }
+
   const handleLogout = async () => {
     setIsLoading(true)
     try {
@@ -93,12 +161,165 @@ const ProfileContent = () => {
     }
   }
 
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target
+    setPasswordForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+    // Clear errors when user starts typing
+    if (passwordError) setPasswordError('')
+    if (passwordSuccess) setPasswordSuccess('')
+  }
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault()
+
+    if (!passwordForm.newPassword || !passwordForm.confirmPassword) {
+      setPasswordError('Please fill in all required fields')
+      return
+    }
+
+    if (passwordForm.newPassword.length < 8) {
+      setPasswordError('Password must be at least 8 characters long')
+      return
+    }
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordError('Passwords do not match')
+      return
+    }
+
+    setIsPasswordLoading(true)
+    setPasswordError('')
+    setPasswordSuccess('')
+
+    try {
+      const response = await fetch('/api/user/update-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(passwordForm),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setPasswordSuccess('Password updated successfully!')
+        setPasswordForm({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: '',
+        })
+      } else {
+        setPasswordError(data.error || 'Failed to update password')
+      }
+    } catch (error) {
+      setPasswordError('An error occurred. Please try again.')
+    } finally {
+      setIsPasswordLoading(false)
+    }
+  }
+
+  const handlePersonalChange = (e) => {
+    const { name, value } = e.target
+    setPersonalForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+    // Clear errors when user starts typing
+    if (personalError) setPersonalError('')
+    if (personalSuccess) setPersonalSuccess('')
+  }
+
+  const handlePersonalSubmit = async (e) => {
+    e.preventDefault()
+
+    if (!personalForm.name.trim()) {
+      setPersonalError('Name is required')
+      return
+    }
+
+    setIsPersonalLoading(true)
+    setPersonalError('')
+    setPersonalSuccess('')
+
+    try {
+      const response = await fetch('/api/user/update-profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(personalForm),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setPersonalSuccess('Profile updated successfully!')
+        // Refresh address data
+        fetchUserAddress()
+        // Update session data if needed
+        window.location.reload() // Simple refresh to update session
+      } else {
+        setPersonalError(data.error || 'Failed to update profile')
+      }
+    } catch (error) {
+      setPersonalError('An error occurred. Please try again.')
+    } finally {
+      setIsPersonalLoading(false)
+    }
+  }
+
+  const handleResendVerification = async () => {
+    setIsResendingVerification(true)
+    setPersonalError('')
+    setPersonalSuccess('')
+
+    try {
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: session.user?.email,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setPersonalSuccess('Verification email sent! Please check your inbox.')
+      } else {
+        setPersonalError(data.error || 'Failed to send verification email')
+      }
+    } catch (error) {
+      setPersonalError('An error occurred. Please try again.')
+    } finally {
+      setIsResendingVerification(false)
+    }
+  }
+
   const sidebarItems = [
     {
       id: 'profile',
       label: 'Profile',
       icon: User,
       description: 'Manage your account information',
+    },
+    {
+      id: 'personal',
+      label: 'Personal Info',
+      icon: User,
+      description: 'Update your personal details',
+    },
+    {
+      id: 'security',
+      label: 'Security',
+      icon: Lock,
+      description: 'Password and security settings',
     },
     {
       id: 'cart',
@@ -287,7 +508,7 @@ const ProfileContent = () => {
                         <div>
                           <p className="text-sm font-medium">Phone</p>
                           <p className="text-sm text-muted-foreground">
-                            Not provided
+                            {userAddress?.phone || 'Not provided'}
                           </p>
                         </div>
                       </div>
@@ -300,6 +521,42 @@ const ProfileContent = () => {
                           </p>
                         </div>
                       </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-4">
+                    <h4 className="font-semibold">Default Address</h4>
+                    <div className="bg-muted/50 p-4 rounded-lg">
+                      {userAddress ? (
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">
+                            {userAddress.name}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {userAddress.phone}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {userAddress.address}, {userAddress.city},{' '}
+                            {userAddress.state} - {userAddress.pincode}
+                          </p>
+                          {userAddress.landmark && (
+                            <p className="text-sm text-muted-foreground">
+                              Landmark: {userAddress.landmark}
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            No address provided yet
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Update your address in the Personal Info section
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -379,6 +636,379 @@ const ProfileContent = () => {
                       </div>
                     </AlertDescription>
                   </Alert>
+                </CardContent>
+              </Card>
+            )}
+
+            {activeSection === 'personal' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Personal Information</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Update your personal details and contact information
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {personalError && (
+                    <Alert variant="destructive">
+                      <AlertDescription>{personalError}</AlertDescription>
+                    </Alert>
+                  )}
+
+                  {personalSuccess && (
+                    <Alert>
+                      <CheckCircle className="h-4 w-4" />
+                      <AlertDescription>{personalSuccess}</AlertDescription>
+                    </Alert>
+                  )}
+
+                  <form onSubmit={handlePersonalSubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Full Name</Label>
+                        <Input
+                          id="name"
+                          name="name"
+                          value={personalForm.name}
+                          onChange={handlePersonalChange}
+                          placeholder="Enter your full name"
+                          className="w-full"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email Address</Label>
+                        <div className="flex items-center space-x-2">
+                          <Input
+                            id="email"
+                            value={session.user?.email || ''}
+                            placeholder="Enter your email"
+                            className="flex-1"
+                            disabled
+                          />
+                          <Badge
+                            variant={
+                              session.user?.emailVerified
+                                ? 'default'
+                                : 'destructive'
+                            }
+                          >
+                            {session.user?.emailVerified
+                              ? 'Verified'
+                              : 'Not Verified'}
+                          </Badge>
+                        </div>
+                        {!session.user?.emailVerified && (
+                          <div className="mt-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={handleResendVerification}
+                              disabled={isResendingVerification}
+                            >
+                              {isResendingVerification
+                                ? 'Sending...'
+                                : 'Resend Verification Email'}
+                            </Button>
+                          </div>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          Email cannot be changed. Contact support if needed.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <h4 className="font-semibold">Address Information</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="phone">Phone Number</Label>
+                          <Input
+                            id="phone"
+                            name="phone"
+                            value={personalForm.phone}
+                            onChange={handlePersonalChange}
+                            placeholder="Enter your phone number"
+                            className="w-full"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="address">Address</Label>
+                          <Input
+                            id="address"
+                            name="address"
+                            value={personalForm.address}
+                            onChange={handlePersonalChange}
+                            placeholder="Enter your address"
+                            className="w-full"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="city">City</Label>
+                          <Input
+                            id="city"
+                            name="city"
+                            value={personalForm.city}
+                            onChange={handlePersonalChange}
+                            placeholder="Enter your city"
+                            className="w-full"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="state">State</Label>
+                          <Input
+                            id="state"
+                            name="state"
+                            value={personalForm.state}
+                            onChange={handlePersonalChange}
+                            placeholder="Enter your state"
+                            className="w-full"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="pincode">Pincode</Label>
+                          <Input
+                            id="pincode"
+                            name="pincode"
+                            value={personalForm.pincode}
+                            onChange={handlePersonalChange}
+                            placeholder="Enter your pincode"
+                            className="w-full"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="landmark">Landmark (Optional)</Label>
+                          <Input
+                            id="landmark"
+                            name="landmark"
+                            value={personalForm.landmark}
+                            onChange={handlePersonalChange}
+                            placeholder="Enter landmark if any"
+                            className="w-full"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex space-x-2">
+                      <Button
+                        type="submit"
+                        className="flex-1"
+                        disabled={isPersonalLoading}
+                      >
+                        {isPersonalLoading
+                          ? 'Updating...'
+                          : 'Update Information'}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setActiveSection('profile')}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            )}
+
+            {activeSection === 'security' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Security Settings</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Manage your password and security preferences
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {passwordError && (
+                    <Alert variant="destructive">
+                      <AlertDescription>{passwordError}</AlertDescription>
+                    </Alert>
+                  )}
+
+                  {passwordSuccess && (
+                    <Alert>
+                      <CheckCircle className="h-4 w-4" />
+                      <AlertDescription>{passwordSuccess}</AlertDescription>
+                    </Alert>
+                  )}
+
+                  <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="currentPassword">Current Password</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="currentPassword"
+                          name="currentPassword"
+                          type={showPasswords.current ? 'text' : 'password'}
+                          placeholder="Enter your current password"
+                          value={passwordForm.currentPassword}
+                          onChange={handlePasswordChange}
+                          className="pl-10 pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setShowPasswords((prev) => ({
+                              ...prev,
+                              current: !prev.current,
+                            }))
+                          }
+                          className="absolute right-3 top-3 h-4 w-4 text-muted-foreground hover:text-foreground"
+                        >
+                          {showPasswords.current ? <EyeOff /> : <Eye />}
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-muted-foreground">
+                          {session.user?.password
+                            ? 'Required to change password'
+                            : 'Leave blank if you signed up with Google'}
+                        </p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          asChild
+                          className="text-xs"
+                        >
+                          <Link href="/forgot-password">
+                            {session.user?.password
+                              ? 'Forgot password?'
+                              : 'Set up password?'}
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="newPassword">New Password</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="newPassword"
+                          name="newPassword"
+                          type={showPasswords.new ? 'text' : 'password'}
+                          placeholder="Enter your new password"
+                          value={passwordForm.newPassword}
+                          onChange={handlePasswordChange}
+                          className="pl-10 pr-10"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setShowPasswords((prev) => ({
+                              ...prev,
+                              new: !prev.new,
+                            }))
+                          }
+                          className="absolute right-3 top-3 h-4 w-4 text-muted-foreground hover:text-foreground"
+                        >
+                          {showPasswords.new ? <EyeOff /> : <Eye />}
+                        </button>
+                      </div>
+                      {passwordForm.newPassword && (
+                        <p className="text-xs text-muted-foreground">
+                          {passwordForm.newPassword.length < 8
+                            ? 'Password must be at least 8 characters long'
+                            : 'Password looks good!'}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">
+                        Confirm New Password
+                      </Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="confirmPassword"
+                          name="confirmPassword"
+                          type={showPasswords.confirm ? 'text' : 'password'}
+                          placeholder="Confirm your new password"
+                          value={passwordForm.confirmPassword}
+                          onChange={handlePasswordChange}
+                          className="pl-10 pr-10"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setShowPasswords((prev) => ({
+                              ...prev,
+                              confirm: !prev.confirm,
+                            }))
+                          }
+                          className="absolute right-3 top-3 h-4 w-4 text-muted-foreground hover:text-foreground"
+                        >
+                          {showPasswords.confirm ? <EyeOff /> : <Eye />}
+                        </button>
+                      </div>
+                      {passwordForm.confirmPassword && (
+                        <p className="text-xs text-muted-foreground">
+                          {passwordForm.newPassword !==
+                          passwordForm.confirmPassword
+                            ? 'Passwords do not match'
+                            : 'Passwords match!'}
+                        </p>
+                      )}
+                    </div>
+
+                    <Button type="submit" disabled={isPasswordLoading}>
+                      {isPasswordLoading ? 'Updating...' : 'Update Password'}
+                    </Button>
+                  </form>
+
+                  <Separator />
+
+                  <div className="space-y-4">
+                    <h4 className="font-semibold">Account Security</h4>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Email Verification</span>
+                        <Badge
+                          variant={
+                            session.user?.emailVerified
+                              ? 'default'
+                              : 'destructive'
+                          }
+                        >
+                          {session.user?.emailVerified
+                            ? 'Verified'
+                            : 'Not Verified'}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Login Method</span>
+                        <Badge variant="secondary">
+                          {session.user?.password
+                            ? 'Email & Password'
+                            : 'Google OAuth'}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {session.user?.password && (
+                      <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+                        <h5 className="font-medium mb-2">
+                          Forgot Your Password?
+                        </h5>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          If you've completely forgotten your password, you can
+                          reset it using your email address.
+                        </p>
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href="/forgot-password">Reset Password</Link>
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             )}

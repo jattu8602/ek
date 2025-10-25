@@ -44,6 +44,7 @@ model User {
   id            String    @id @default(auto()) @map("_id") @db.ObjectId
   name          String?
   email         String    @unique
+  password      String?   // Nullable for Google-only users
   emailVerified DateTime?
   image         String?
   role          UserRole  @default(CUSTOMER)
@@ -60,6 +61,7 @@ model User {
   addresses     UserAddress[]
   adminSettings AdminSettings?
   recentProducts RecentProduct[]
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
 }
@@ -297,4 +299,16 @@ model RecentProduct {
 
   @@unique([userId, productId])
   @@map("recent_products")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_reset_tokens")
 }
