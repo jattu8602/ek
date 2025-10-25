@@ -58,6 +58,16 @@ const MainHeader = ({ isSticky = false }) => {
     setIsSearchOpen(false)
   }
 
+  const handleSearchSubmit = (e) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      e.preventDefault()
+      // Navigate to search results page
+      window.location.href = `/search?q=${encodeURIComponent(
+        searchQuery.trim()
+      )}`
+    }
+  }
+
   return (
     <header
       className={`
@@ -99,6 +109,7 @@ const MainHeader = ({ isSticky = false }) => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setIsSearchOpen(true)}
+                onKeyDown={handleSearchSubmit}
               />
               {searchQuery && (
                 <Button
