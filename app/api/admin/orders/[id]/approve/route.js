@@ -5,6 +5,9 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 // POST - Approve order (admin only)
 export async function POST(request, { params }) {
   try {

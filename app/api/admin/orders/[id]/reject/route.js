@@ -6,6 +6,9 @@ import { createRefund } from '@/lib/razorpay'
 
 const prisma = new PrismaClient()
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 // POST - Reject order with automatic refund (admin only)
 export async function POST(request, { params }) {
   try {
