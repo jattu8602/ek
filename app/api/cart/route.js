@@ -5,7 +5,7 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-// GET - Fetch user's cart items
+// GET - Fetch user's cart items with full product details
 export async function GET() {
   try {
     const session = await getServerSession(authOptions)
@@ -17,6 +17,13 @@ export async function GET() {
     const cartItems = await prisma.cartItem.findMany({
       where: {
         userId: session.user.id,
+      },
+      include: {
+        product: {
+          include: {
+            units: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -42,7 +49,12 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { productId, quantity = 1 } = await request.json()
+    const {
+      productId,
+      quantity = 1,
+      unitId,
+      selectedUnit,
+    } = await request.json()
 
     if (!productId) {
       return NextResponse.json(
@@ -51,13 +63,12 @@ export async function POST(request) {
       )
     }
 
-    // Check if item already exists in cart
-    const existingItem = await prisma.cartItem.findUnique({
+    // Check if item already exists in cart with same unit
+    const existingItem = await prisma.cartItem.findFirst({
       where: {
-        userId_productId: {
-          userId: session.user.id,
-          productId: productId,
-        },
+        userId: session.user.id,
+        productId: productId,
+        unitId: unitId,
       },
     })
 
@@ -78,6 +89,8 @@ export async function POST(request) {
         data: {
           userId: session.user.id,
           productId: productId,
+          unitId: unitId,
+          selectedUnit: selectedUnit,
           quantity: quantity,
         },
       })
@@ -92,7 +105,7 @@ export async function POST(request) {
   }
 }
 
-// PUT - Update cart item quantity
+// PUT - Update cart item quantity or unit
 export async function PUT(request) {
   try {
     const session = await getServerSession(authOptions)
@@ -101,7 +114,7 @@ export async function PUT(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { productId, quantity } = await request.json()
+    const { productId, quantity, unitId, selectedUnit } = await request.json()
 
     if (!productId || quantity < 0) {
       return NextResponse.json({ error: 'Invalid data' }, { status: 400 })
@@ -125,6 +138,8 @@ export async function PUT(request) {
       },
       data: {
         quantity: quantity,
+        unitId: unitId,
+        selectedUnit: selectedUnit,
       },
     })
 

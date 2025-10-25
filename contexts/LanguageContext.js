@@ -143,25 +143,34 @@ const translations = {
 
 export function LanguageProvider({ children }) {
   const [language, setLanguage] = useState('hindi') // Default to Hindi
+  const [isClient, setIsClient] = useState(false)
 
   const t = (key) => {
     return translations[language][key] || key
   }
 
-  // Save language preference to localStorage
+  // Load language preference from localStorage on mount
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('language')
-    if (
-      savedLanguage &&
-      (savedLanguage === 'hindi' || savedLanguage === 'english')
-    ) {
-      setLanguage(savedLanguage)
+    setIsClient(true)
+
+    // Only access localStorage after component mounts (client-side only)
+    if (typeof window !== 'undefined') {
+      const savedLanguage = localStorage.getItem('language')
+      if (
+        savedLanguage &&
+        (savedLanguage === 'hindi' || savedLanguage === 'english')
+      ) {
+        setLanguage(savedLanguage)
+      }
     }
   }, [])
 
+  // Save language preference to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('language', language)
-  }, [language])
+    if (isClient && typeof window !== 'undefined') {
+      localStorage.setItem('language', language)
+    }
+  }, [language, isClient])
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>

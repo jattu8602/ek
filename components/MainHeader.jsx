@@ -23,7 +23,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
 
-const MainHeader = () => {
+const MainHeader = ({ isSticky = false }) => {
   const { data: session, status } = useSession()
 
   const handleSignOut = () => {
@@ -31,7 +31,17 @@ const MainHeader = () => {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-background border-b border-border shadow-sm">
+    <header
+      className={`
+        bg-background border-b border-border
+        transition-all duration-300 ease-in-out
+        ${
+          isSticky
+            ? 'fixed top-0 left-0 right-0 z-50 shadow-md animate-in slide-in-from-top-5'
+            : 'relative'
+        }
+      `}
+    >
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           {/* Logo */}

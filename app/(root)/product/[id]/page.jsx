@@ -1,10 +1,19 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { notFound } from 'next/navigation'
+import { notFound, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ChevronRight, Star, Minus, Plus, Heart, Share2, ShoppingCart } from 'lucide-react'
+import {
+  ChevronRight,
+  Star,
+  Minus,
+  Plus,
+  Heart,
+  Share2,
+  ShoppingCart,
+  CreditCard,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import {
@@ -18,6 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function ProductDetail({ params }) {
+  const router = useRouter()
   const { t } = useLanguage()
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
@@ -141,7 +151,7 @@ export default function ProductDetail({ params }) {
                 </div>
               )}
             </div>
-            
+
             {/* Image Thumbnails */}
             {product.images && product.images.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-2">
@@ -196,18 +206,29 @@ export default function ProductDetail({ params }) {
             <div className="space-y-4">
               <div className="flex items-center gap-4">
                 <span className="text-3xl font-bold text-primary">
-                  ₹{selectedUnitData?.discountedPrice || product.units?.[0]?.discountedPrice || 'N/A'}
+                  ₹
+                  {selectedUnitData?.discountedPrice ||
+                    product.units?.[0]?.discountedPrice ||
+                    'N/A'}
                 </span>
-                {selectedUnitData?.actualPrice && selectedUnitData?.discountedPrice && (
-                  <span className="text-lg text-muted-foreground line-through">
-                    ₹{selectedUnitData.actualPrice}
-                  </span>
-                )}
-                {selectedUnitData?.actualPrice && selectedUnitData?.discountedPrice && (
-                  <span className="bg-red-100 text-red-800 text-sm font-medium px-2 py-1 rounded">
-                    {Math.round(((selectedUnitData.actualPrice - selectedUnitData.discountedPrice) / selectedUnitData.actualPrice) * 100)}% OFF
-                  </span>
-                )}
+                {selectedUnitData?.actualPrice &&
+                  selectedUnitData?.discountedPrice && (
+                    <span className="text-lg text-muted-foreground line-through">
+                      ₹{selectedUnitData.actualPrice}
+                    </span>
+                  )}
+                {selectedUnitData?.actualPrice &&
+                  selectedUnitData?.discountedPrice && (
+                    <span className="bg-red-100 text-red-800 text-sm font-medium px-2 py-1 rounded">
+                      {Math.round(
+                        ((selectedUnitData.actualPrice -
+                          selectedUnitData.discountedPrice) /
+                          selectedUnitData.actualPrice) *
+                          100
+                      )}
+                      % OFF
+                    </span>
+                  )}
               </div>
 
               {/* Unit Selection */}
@@ -258,11 +279,7 @@ export default function ProductDetail({ params }) {
 
               {/* Action Buttons */}
               <div className="flex gap-4">
-                <Button
-                  size="lg"
-                  className="flex-1"
-                  onClick={handleAddToCart}
-                >
+                <Button size="lg" className="flex-1" onClick={handleAddToCart}>
                   <ShoppingCart className="mr-2 h-4 w-4" />
                   Add to Cart
                 </Button>
@@ -280,6 +297,33 @@ export default function ProductDetail({ params }) {
                   <Share2 size={20} />
                 </Button>
               </div>
+
+              {/* Buy Now Button */}
+              <Button
+                size="lg"
+                className="w-full"
+                onClick={() => {
+                  // Navigate to checkout with single item
+                  const checkoutItem = {
+                    productId: product.id,
+                    unitId: selectedUnitData?.id,
+                    selectedUnit: selectedUnit,
+                    quantity: quantity,
+                    totalPrice: selectedUnitData?.discountedPrice * quantity,
+                    unitPrice: selectedUnitData?.discountedPrice,
+                    productName: product.name,
+                  }
+
+                  router.push(
+                    `/checkout?items=${encodeURIComponent(
+                      JSON.stringify([checkoutItem])
+                    )}`
+                  )
+                }}
+              >
+                <CreditCard className="mr-2 h-4 w-4" />
+                Buy Now
+              </Button>
             </div>
           </div>
         </div>
@@ -292,7 +336,7 @@ export default function ProductDetail({ params }) {
               <TabsTrigger value="specifications">Specifications</TabsTrigger>
               <TabsTrigger value="reviews">Reviews</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="description" className="mt-6">
               <div className="prose max-w-none">
                 <p className="text-muted-foreground">
@@ -300,7 +344,7 @@ export default function ProductDetail({ params }) {
                 </p>
               </div>
             </TabsContent>
-            
+
             <TabsContent value="specifications" className="mt-6">
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -329,7 +373,7 @@ export default function ProductDetail({ params }) {
                 </div>
               </div>
             </TabsContent>
-            
+
             <TabsContent value="reviews" className="mt-6">
               <div className="text-center py-8">
                 <p className="text-muted-foreground">No reviews yet.</p>

@@ -60,7 +60,12 @@ export function CartProvider({ children }) {
   }, [user])
 
   // Add item to cart
-  const addToCart = async (productId, quantity = 1) => {
+  const addToCart = async (
+    productId,
+    quantity = 1,
+    unitId = null,
+    selectedUnit = null
+  ) => {
     requireAuth(() => {
       const addItem = async () => {
         try {
@@ -69,7 +74,7 @@ export function CartProvider({ children }) {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ productId, quantity }),
+            body: JSON.stringify({ productId, quantity, unitId, selectedUnit }),
           })
 
           if (response.ok) {
@@ -107,7 +112,12 @@ export function CartProvider({ children }) {
   }
 
   // Update cart item quantity
-  const updateCartQuantity = async (productId, quantity) => {
+  const updateCartQuantity = async (
+    productId,
+    quantity,
+    unitId = null,
+    selectedUnit = null
+  ) => {
     if (!user) return
 
     try {
@@ -116,7 +126,7 @@ export function CartProvider({ children }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ productId, quantity }),
+        body: JSON.stringify({ productId, quantity, unitId, selectedUnit }),
       })
 
       if (response.ok) {

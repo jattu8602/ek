@@ -1,25 +1,60 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Heart, ShoppingCart, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useCart } from '@/contexts/CartContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function ProductCard({ product }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [selectedUnit, setSelectedUnit] = useState('')
   const { addToCart, addToFavorites, removeFromFavorites, isInFavorites } =
     useCart()
   const { requireAuth } = useAuth()
   const { t } = useLanguage()
 
+  // Set default unit when component mounts
+  useEffect(() => {
+    if (product.units && product.units.length > 0) {
+      const defaultUnit = `${product.units[0].number} ${product.units[0].type}`
+      setSelectedUnit(defaultUnit)
+    }
+  }, [product.units])
+
   const handleAddToCart = () => {
     requireAuth(() => {
-      addToCart(product.id, 1)
+      // Find the selected unit
+      const unit = product.units?.find(
+        (u) => `${u.number} ${u.type}` === selectedUnit
+      )
+      if (unit) {
+        addToCart(product.id, 1, unit.id, selectedUnit)
+      } else {
+        // Fallback to first unit if no unit selected
+        if (product.units && product.units.length > 0) {
+          const firstUnit = product.units[0]
+          addToCart(
+            product.id,
+            1,
+            firstUnit.id,
+            `${firstUnit.number} ${firstUnit.type}`
+          )
+        } else {
+          addToCart(product.id, 1)
+        }
+      }
     })
   }
 
@@ -127,24 +162,29 @@ export default function ProductCard({ product }) {
         {/* Price */}
         <div className="flex items-center gap-2 mb-3">
           {product.units && product.units.length > 0 ? (
-            <>
-              <span className="text-lg font-bold text-gray-900">
-                ₹{product.units[0].discountedPrice}
-              </span>
-              {(() => {
-                const unit = product.units[0]
-                const discountPercent = Math.round(
-                  ((unit.actualPrice - unit.discountedPrice) /
-                    unit.actualPrice) *
-                    100
-                )
-                return discountPercent > 0 ? (
-                  <span className="text-sm text-gray-500 line-through">
-                    ₹{unit.actualPrice}
+            (() => {
+              // Find the selected unit or default to first unit
+              const unit =
+                product.units.find(
+                  (u) => `${u.number} ${u.type}` === selectedUnit
+                ) || product.units[0]
+              const discountPercent = Math.round(
+                ((unit.actualPrice - unit.discountedPrice) / unit.actualPrice) *
+                  100
+              )
+              return (
+                <>
+                  <span className="text-lg font-bold text-gray-900">
+                    ₹{unit.discountedPrice}
                   </span>
-                ) : null
-              })()}
-            </>
+                  {discountPercent > 0 && (
+                    <span className="text-sm text-gray-500 line-through">
+                      ₹{unit.actualPrice}
+                    </span>
+                  )}
+                </>
+              )
+            })()
           ) : (
             <span className="text-lg font-bold text-gray-900">
               Price not available
@@ -157,6 +197,24 @@ export default function ProductCard({ product }) {
           <span className="font-medium">{t('product.category')}:</span>{' '}
           {product.category}
         </div>
+
+        {/* Unit Selection */}
+        {product.units && product.units.length > 1 && (
+          <div className="mb-3">
+            <Select value={selectedUnit} onValueChange={setSelectedUnit}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select unit" />
+              </SelectTrigger>
+              <SelectContent>
+                {product.units.map((unit, index) => (
+                  <SelectItem key={index} value={`${unit.number} ${unit.type}`}>
+                    {unit.number} {unit.type} - ₹{unit.discountedPrice}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="flex gap-2">

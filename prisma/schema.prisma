@@ -57,6 +57,7 @@ model User {
   reviews       Review[]
   ratings       Rating[]
   orders        Order[]
+  addresses     UserAddress[]
   adminSettings AdminSettings?
 
   @@map("users")
@@ -73,14 +74,17 @@ model VerificationToken {
 }
 
 model CartItem {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
-  productId String
-  quantity  Int      @default(1)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  productId    String   @db.ObjectId
+  unitId       String?  // Reference to ProductUnit
+  selectedUnit String?  // Human readable unit like "1 kg", "2 L"
+  quantity     Int      @default(1)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId])
   @@map("cart_items")
@@ -111,6 +115,8 @@ enum ProductStatus {
 
 enum OrderStatus {
   PENDING
+  APPROVED
+  REJECTED
   PROCESSING
   SHIPPED
   DELIVERED
@@ -135,6 +141,7 @@ model Product {
   ratings           Rating[]
   orderItems        OrderItem[]
   units             ProductUnit[]
+  cartItems         CartItem[]
 
   @@map("products")
 }
@@ -187,30 +194,79 @@ model Rating {
 }
 
 model Order {
-  id          String      @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String      @db.ObjectId
-  status      OrderStatus @default(PENDING)
-  totalAmount Float
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id              String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String      @db.ObjectId
+  status          OrderStatus @default(PENDING)
+  totalAmount     Float
+  phoneNumber     String
+  shippingAddress String      // JSON string of address
+  deliveryDate    DateTime?   // Set by admin for home delivery
+  isShopPickup    Boolean     @default(false)
+  paymentId       String?     // Razorpay payment ID
+  paymentStatus   String?     // PENDING, CAPTURED, FAILED
+  adminNotes      String?     // Admin notes for rejection reason
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   orderItems  OrderItem[]
+  paymentTransaction PaymentTransaction?
 
   @@map("orders")
 }
 
 model OrderItem {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  orderId   String  @db.ObjectId
-  productId String  @db.ObjectId
-  quantity  Int
-  price     Float
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  orderId      String  @db.ObjectId
+  productId    String  @db.ObjectId
+  unitId       String? // Reference to ProductUnit
+  selectedUnit String? // Human readable unit like "1 kg", "2 L"
+  quantity     Int
+  unitPrice    Float   // Price per unit at time of purchase
+  totalPrice   Float   // Total price for this item (unitPrice * quantity)
 
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("order_items")
+}
+
+model UserAddress {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  name      String
+  phone     String
+  address   String
+  city      String
+  state     String
+  pincode   String
+  landmark  String?
+  isDefault Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_addresses")
+}
+
+model PaymentTransaction {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderId           String   @unique @db.ObjectId
+  razorpayOrderId   String
+  razorpayPaymentId String?
+  razorpaySignature String?
+  amount            Float
+  currency          String   @default("INR")
+  status            String   // PENDING, CAPTURED, FAILED, REFUNDED
+  refundId          String?  // Razorpay refund ID
+  refundAmount      Float?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("payment_transactions")
 }
 
 model AdminSettings {
