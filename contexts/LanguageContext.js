@@ -61,6 +61,18 @@ const translations = {
     // Footer
     'footer.copyright': '© 2025 एकता कृषि केंद्र केओलारी। सभी अधिकार सुरक्षित।',
     'footer.phone': '📞 ऑर्डर के लिए कॉल करें: 8602074069',
+    'footer.company.title': 'एकता कृषि केंद्र',
+    'footer.company.description':
+      'भारत का भरोसेमंद स्रोत गुणवत्तापूर्ण बीज, उर्वरक और फसल सुरक्षा उत्पादों के लिए',
+    'footer.company.address': 'केओलारी, जिला सिवनी, मध्य प्रदेश',
+    'footer.quickLinks.title': 'त्वरित लिंक',
+    'footer.legal.title': 'कानूनी',
+    'footer.customerService.title': 'ग्राहक सेवा',
+    'footer.business.title': 'व्यापार',
+    'footer.social.title': 'सोशल मीडिया',
+    'footer.newsletter.title': 'न्यूज़लेटर',
+    'footer.newsletter.placeholder': 'आपका ईमेल पता',
+    'footer.newsletter.subscribe': 'सब्सक्राइब करें',
 
     // Breadcrumbs
     'breadcrumb.home': 'होम',
@@ -71,6 +83,36 @@ const translations = {
     'product.availableUnits': 'उपलब्ध इकाइयां',
     'product.rating': 'रेटिंग',
     'product.reviews.count': 'समीक्षाएं',
+
+    // Legal Pages
+    'legal.terms.title': 'नियम और शर्तें',
+    'legal.privacy.title': 'गोपनीयता नीति',
+    'legal.refund.title': 'रिफंड और रिटर्न नीति',
+    'legal.shipping.title': 'शिपिंग नीति',
+    'legal.disclaimer.title': 'अस्वीकरण',
+    'legal.about.title': 'हमारे बारे में',
+    'legal.contact.title': 'संपर्क करें',
+
+    // Forms
+    'form.name': 'नाम',
+    'form.email': 'ईमेल',
+    'form.phone': 'फोन',
+    'form.message': 'संदेश',
+    'form.businessName': 'व्यापार का नाम',
+    'form.businessType': 'व्यापार का प्रकार',
+    'form.description': 'विवरण',
+    'form.submit': 'जमा करें',
+    'form.submitting': 'जमा हो रहा है...',
+    'form.success': 'सफलतापूर्वक जमा हो गया',
+    'form.error': 'त्रुटि हुई, कृपया पुनः प्रयास करें',
+
+    // Admin
+    'admin.contacts.title': 'संपर्क जमा',
+    'admin.sellers.title': 'विक्रेता आवेदन',
+    'admin.status.pending': 'लंबित',
+    'admin.status.reviewed': 'समीक्षित',
+    'admin.status.responded': 'उत्तर दिया',
+    'admin.status.archived': 'संग्रहीत',
   },
   english: {
     // Header
@@ -128,6 +170,18 @@ const translations = {
     'footer.copyright':
       '© 2025 Ekta Krishi Kendra Keolari. All rights reserved.',
     'footer.phone': '📞 Call to order: 8602074069',
+    'footer.company.title': 'Ekta Krishi Kendra',
+    'footer.company.description':
+      "India's trusted source for quality seeds, fertilizers, and crop protection products",
+    'footer.company.address': 'Keolari, District Seoni, Madhya Pradesh',
+    'footer.quickLinks.title': 'Quick Links',
+    'footer.legal.title': 'Legal',
+    'footer.customerService.title': 'Customer Service',
+    'footer.business.title': 'Business',
+    'footer.social.title': 'Social Media',
+    'footer.newsletter.title': 'Newsletter',
+    'footer.newsletter.placeholder': 'Your email address',
+    'footer.newsletter.subscribe': 'Subscribe',
 
     // Breadcrumbs
     'breadcrumb.home': 'Home',
@@ -138,6 +192,36 @@ const translations = {
     'product.availableUnits': 'Available Units',
     'product.rating': 'Rating',
     'product.reviews.count': 'Reviews',
+
+    // Legal Pages
+    'legal.terms.title': 'Terms & Conditions',
+    'legal.privacy.title': 'Privacy Policy',
+    'legal.refund.title': 'Refund & Return Policy',
+    'legal.shipping.title': 'Shipping Policy',
+    'legal.disclaimer.title': 'Disclaimer',
+    'legal.about.title': 'About Us',
+    'legal.contact.title': 'Contact Us',
+
+    // Forms
+    'form.name': 'Name',
+    'form.email': 'Email',
+    'form.phone': 'Phone',
+    'form.message': 'Message',
+    'form.businessName': 'Business Name',
+    'form.businessType': 'Business Type',
+    'form.description': 'Description',
+    'form.submit': 'Submit',
+    'form.submitting': 'Submitting...',
+    'form.success': 'Successfully submitted',
+    'form.error': 'Error occurred, please try again',
+
+    // Admin
+    'admin.contacts.title': 'Contact Submissions',
+    'admin.sellers.title': 'Seller Applications',
+    'admin.status.pending': 'Pending',
+    'admin.status.reviewed': 'Reviewed',
+    'admin.status.responded': 'Responded',
+    'admin.status.archived': 'Archived',
   },
 }
 

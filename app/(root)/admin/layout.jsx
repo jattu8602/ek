@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
@@ -21,8 +21,13 @@ import {
   LogOut,
   Bell,
   Search,
+  MessageSquare,
+  Building2,
+  Mail,
 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+
+// Dynamic imports for heavy components will be added per page as needed
 
 const navigation = [
   {
@@ -44,6 +49,21 @@ const navigation = [
     name: 'Orders',
     href: '/admin/orders',
     icon: ShoppingCart,
+  },
+  {
+    name: 'Contacts',
+    href: '/admin/contacts',
+    icon: MessageSquare,
+  },
+  {
+    name: 'Sellers',
+    href: '/admin/sellers',
+    icon: Building2,
+  },
+  {
+    name: 'Newsletter',
+    href: '/admin/newsletter',
+    icon: Mail,
   },
   {
     name: 'Analytics',
@@ -251,7 +271,13 @@ export default function AdminLayout({ children }) {
         <main className="flex-1">
           <div className="py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              {children}
+              <Suspense
+                fallback={
+                  <div className="animate-pulse bg-gray-200 h-64 rounded-lg" />
+                }
+              >
+                {children}
+              </Suspense>
             </div>
           </div>
         </main>

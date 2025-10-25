@@ -32,6 +32,9 @@ const MainHeader = ({ isSticky = false }) => {
   const [searchQuery, setSearchQuery] = useState('')
   const searchRef = useRef(null)
 
+  // Debug session
+  console.log('MainHeader session:', { session, status })
+
   const handleSignOut = () => {
     signOut({ callbackUrl: '/' })
   }

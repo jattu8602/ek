@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { SessionProvider } from 'next-auth/react'
 import { Toaster } from '@/components/ui/toaster'
 import { Toaster as Sonner } from '@/components/ui/sonner'
@@ -11,7 +11,21 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { CartProvider } from '@/contexts/CartContext'
 
 export default function Providers({ children }) {
-  const [queryClient] = useState(() => new QueryClient())
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 5 * 60 * 1000, // 5 minutes
+            cacheTime: 10 * 60 * 1000, // 10 minutes
+            refetchOnWindowFocus: false,
+            retry: 1,
+          },
+        },
+      })
+  )
+
+  const memoizedChildren = useMemo(() => children, [children])
 
   return (
     <SessionProvider>
@@ -20,7 +34,7 @@ export default function Providers({ children }) {
           <AuthProvider>
             <CartProvider>
               <TooltipProvider>
-                {children}
+                {memoizedChildren}
                 <Toaster />
                 <Sonner />
               </TooltipProvider>

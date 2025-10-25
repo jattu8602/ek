@@ -62,6 +62,8 @@ model User {
   adminSettings AdminSettings?
   recentProducts RecentProduct[]
   passwordResetTokens PasswordResetToken[]
+  contactSubmissions ContactSubmission[]
+  sellerApplications SellerApplication[]
 
   @@map("users")
 }
@@ -108,6 +110,13 @@ model Favorite {
 enum UserRole {
   CUSTOMER
   ADMIN
+}
+
+enum SubmissionStatus {
+  PENDING
+  REVIEWED
+  RESPONDED
+  ARCHIVED
 }
 
 enum ProductStatus {
@@ -311,4 +320,50 @@ model PasswordResetToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("password_reset_tokens")
+}
+
+model ContactSubmission {
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String           @db.ObjectId
+  name      String
+  email     String
+  phone     String
+  message   String
+  status    SubmissionStatus @default(PENDING)
+  adminNotes String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("contact_submissions")
+}
+
+model SellerApplication {
+  id          String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String           @db.ObjectId
+  name        String
+  email       String
+  phone       String
+  businessName String
+  businessType String
+  description String
+  status      SubmissionStatus @default(PENDING)
+  adminNotes  String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("seller_applications")
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("newsletter_subscribers")
 }

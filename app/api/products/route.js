@@ -53,15 +53,35 @@ export async function GET(request) {
       orderBy.createdAt = sortOrder
     }
 
-    // Fetch products with pagination
+    // Fetch products with pagination - optimized query
     const [products, total] = await Promise.all([
       prisma.product.findMany({
         where,
         orderBy,
         skip: (page - 1) * limit,
         take: limit,
-        include: {
-          units: true,
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          images: true,
+          category: true,
+          subcategory: true,
+          rating: true,
+          reviewCount: true,
+          createdAt: true,
+          units: {
+            select: {
+              id: true,
+              number: true,
+              type: true,
+              actualPrice: true,
+              discountedPrice: true,
+              status: true,
+            },
+            where: { status: 'ACTIVE' },
+            take: 1,
+          },
           _count: {
             select: {
               reviews: true,
@@ -73,15 +93,22 @@ export async function GET(request) {
       prisma.product.count({ where }),
     ])
 
-    return NextResponse.json({
-      products,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
+    return NextResponse.json(
+      {
+        products,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit),
+        },
       },
-    })
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+        },
+      }
+    )
   } catch (error) {
     console.error('Error fetching products:', error)
     return NextResponse.json(
