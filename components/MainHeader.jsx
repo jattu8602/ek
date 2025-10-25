@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect, useRef } from 'react'
 import {
   Search,
   ShoppingCart,
@@ -8,6 +9,7 @@ import {
   Settings,
   Shield,
   Heart,
+  X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,12 +24,38 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
+import SearchCommandPalette from '@/components/SearchCommandPalette'
 
 const MainHeader = ({ isSticky = false }) => {
   const { data: session, status } = useSession()
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const searchRef = useRef(null)
 
   const handleSignOut = () => {
     signOut({ callbackUrl: '/' })
+  }
+
+  // Handle outside click to close search
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setIsSearchOpen(false)
+      }
+    }
+
+    if (isSearchOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isSearchOpen])
+
+  const handleClearSearch = () => {
+    setSearchQuery('')
+    setIsSearchOpen(false)
   }
 
   return (
@@ -60,15 +88,39 @@ const MainHeader = ({ isSticky = false }) => {
 
           {/* Search Bar */}
           <div className="flex-1 max-w-2xl mx-4">
-            <div className="relative">
+            <div className="relative w-full" ref={searchRef}>
               <Search
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 size={20}
               />
               <Input
                 placeholder="Search for seeds, pesticides, fertilizers..."
-                className="pl-10 pr-4"
+                className="pl-10 pr-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setIsSearchOpen(true)}
               />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                  onClick={handleClearSearch}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+              {isSearchOpen && (
+                <div className="absolute top-full left-0 right-0 z-50 mt-1">
+                  <SearchCommandPalette
+                    open={isSearchOpen}
+                    onOpenChange={setIsSearchOpen}
+                    isDropdown={true}
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                  />
+                </div>
+              )}
             </div>
           </div>
 

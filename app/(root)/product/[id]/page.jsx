@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { addRecentProduct } from '@/lib/recentProducts'
 
 export default function ProductDetail({ params }) {
   const router = useRouter()
@@ -52,6 +53,32 @@ export default function ProductDetail({ params }) {
           setProduct(data)
           if (data.units && data.units.length > 0) {
             setSelectedUnit(`${data.units[0].number} ${data.units[0].type}`)
+          }
+
+          // Track product view
+          addRecentProduct({
+            id: data.id,
+            name: data.name,
+            image: data.images[0] || '/placeholder-product.jpg',
+            category: data.category,
+            subcategory: data.subcategory,
+            price: data.units[0]?.discountedPrice || 0,
+            unit: data.units[0]
+              ? `${data.units[0].number} ${data.units[0].type}`
+              : '',
+          })
+
+          // Sync with database if logged in
+          try {
+            await fetch('/api/user/recent-products', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ productId: data.id }),
+            })
+          } catch (error) {
+            console.error('Error tracking product view:', error)
           }
         } else if (response.status === 404) {
           notFound()

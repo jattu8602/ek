@@ -59,6 +59,7 @@ model User {
   orders        Order[]
   addresses     UserAddress[]
   adminSettings AdminSettings?
+  recentProducts RecentProduct[]
 
   @@map("users")
 }
@@ -142,6 +143,7 @@ model Product {
   orderItems        OrderItem[]
   units             ProductUnit[]
   cartItems         CartItem[]
+  recentProducts    RecentProduct[]
 
   @@map("products")
 }
@@ -280,4 +282,19 @@ model AdminSettings {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("admin_settings")
+}
+
+model RecentProduct {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  productId String   @db.ObjectId
+  viewedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("recent_products")
 }

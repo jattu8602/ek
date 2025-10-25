@@ -69,7 +69,7 @@ export default function ProductCard({ product }) {
   }
 
   const handleImageClick = () => {
-    if (product.images.length > 1) {
+    if (product.images && product.images.length > 1) {
       setCurrentImageIndex((prev) => (prev + 1) % product.images.length)
     }
   }
@@ -79,7 +79,11 @@ export default function ProductCard({ product }) {
       {/* Product Image */}
       <div className="relative aspect-square overflow-hidden">
         <Image
-          src={product.images[currentImageIndex]}
+          src={
+            product.images?.[currentImageIndex] ||
+            product.image ||
+            '/placeholder-product.jpg'
+          }
           alt={product.name}
           fill
           className="object-cover transition-transform duration-300 group-hover:scale-105"
