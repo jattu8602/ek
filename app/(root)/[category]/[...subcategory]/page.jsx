@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { products, categories } from '@/data/products'
+import { categories } from '@/data/products'
 import { ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import ProductCard from '@/components/ProductCard'
@@ -17,12 +17,45 @@ export default function CategoryPage({ params }) {
   const [category, setCategory] = useState('')
   const [subcategory, setSubcategory] = useState('')
   const [isLoading, setIsLoading] = useState(true)
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setCategory(params.category)
     setSubcategory(params.subcategory?.[0] || '')
     setIsLoading(false)
   }, [params])
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      if (!category) return
+
+      try {
+        setLoading(true)
+        const categoryName =
+          categories.find((c) => c.slug === decodeURIComponent(category))
+            ?.name || decodeURIComponent(category)
+
+        const subcategoryName = decodeURIComponent(subcategory)
+
+        const response = await fetch(
+          `/api/products?category=${encodeURIComponent(
+            categoryName
+          )}&subcategory=${encodeURIComponent(subcategoryName)}`
+        )
+        if (response.ok) {
+          const data = await response.json()
+          setProducts(data.products)
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProducts()
+  }, [category, subcategory])
 
   if (isLoading) {
     return (
@@ -60,45 +93,8 @@ export default function CategoryPage({ params }) {
     allCategories: categories.map((c) => ({ slug: c.slug, name: c.name })),
   })
 
-  // This filtering logic runs on the server. We compare against the canonical
-  // category name so products that use slightly different casing/spacing still match.
-  const filteredProducts = products.filter((product) => {
-    if (subcategory) {
-      // Try to resolve the incoming subcategory slug to one of the
-      // canonical subcategory names for this category (if available).
-      const incoming = decodeURIComponent(subcategory).toLowerCase()
-
-      // If we have a category object with subcategories, try to find a match
-      // by comparing both raw lowercased values and slugified values.
-      const matchedSub = categoryObj?.subcategories.find((s) => {
-        const raw = s.toLowerCase()
-        const sSlug = slugify(s)
-        return (
-          raw === incoming || sSlug === incoming || sSlug === slugify(incoming)
-        )
-      })
-
-      const canonicalSub = matchedSub ?? decodeURIComponent(subcategory)
-
-      // Compare product subcategory with the canonical subcategory (case-insensitive)
-      // Also try direct comparison with the incoming subcategory
-      const productSubLower = product.subcategory.toLowerCase()
-      const canonicalSubLower = canonicalSub.toLowerCase()
-      const incomingLower = incoming
-
-      return (
-        productSubLower === canonicalSubLower ||
-        productSubLower === incomingLower
-      )
-    }
-
-    return product.category.toLowerCase() === categoryName.toLowerCase()
-  })
-
   const brands = [
-    ...new Set(
-      filteredProducts.map((p) => p.name.split(' ')[0]).filter(Boolean)
-    ),
+    ...new Set(products.map((p) => p.name.split(' ')[0]).filter(Boolean)),
   ]
 
   return (
@@ -149,7 +145,7 @@ export default function CategoryPage({ params }) {
               <h2 className="text-2xl font-bold capitalize">
                 {subcategory ? decodeURIComponent(subcategory) : categoryName}
                 <span className="text-muted-foreground text-base ml-2">
-                  ({filteredProducts.length} {t('category.products.count')})
+                  ({products.length} {t('category.products.count')})
                 </span>
               </h2>
               <Button variant="outline" size="sm">
@@ -157,13 +153,24 @@ export default function CategoryPage({ params }) {
               </Button>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+            {loading ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="bg-muted rounded-lg aspect-square animate-pulse"
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                {products.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            )}
 
-            {filteredProducts.length === 0 && (
+            {!loading && products.length === 0 && (
               <div className="text-center py-12">
                 <p className="text-muted-foreground">
                   {t('category.noProducts')}

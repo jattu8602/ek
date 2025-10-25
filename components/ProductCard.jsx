@@ -52,11 +52,20 @@ export default function ProductCard({ product }) {
         />
 
         {/* Discount Badge */}
-        {product.discountPercent > 0 && (
-          <Badge className="absolute top-2 left-2 bg-red-500 text-white">
-            {product.discountPercent}% {t('product.off')}
-          </Badge>
-        )}
+        {product.units &&
+          product.units.length > 0 &&
+          (() => {
+            const unit = product.units[0]
+            const discountPercent = Math.round(
+              ((unit.actualPrice - unit.discountedPrice) / unit.actualPrice) *
+                100
+            )
+            return discountPercent > 0 ? (
+              <Badge className="absolute top-2 left-2 bg-red-500 text-white">
+                {discountPercent}% {t('product.off')}
+              </Badge>
+            ) : null
+          })()}
 
         {/* Favorite Button */}
         <Button
@@ -90,7 +99,7 @@ export default function ProductCard({ product }) {
       {/* Product Info */}
       <div className="p-4">
         {/* Product Name */}
-        <Link href={`/product/${product.urlSlug}`}>
+        <Link href={`/product/${product.id}`}>
           <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-primary transition-colors">
             {product.name}
           </h3>
@@ -117,12 +126,28 @@ export default function ProductCard({ product }) {
 
         {/* Price */}
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg font-bold text-gray-900">
-            ₹{product.discountedPrice}
-          </span>
-          {product.discountPercent > 0 && (
-            <span className="text-sm text-gray-500 line-through">
-              ₹{product.actualPrice}
+          {product.units && product.units.length > 0 ? (
+            <>
+              <span className="text-lg font-bold text-gray-900">
+                ₹{product.units[0].discountedPrice}
+              </span>
+              {(() => {
+                const unit = product.units[0]
+                const discountPercent = Math.round(
+                  ((unit.actualPrice - unit.discountedPrice) /
+                    unit.actualPrice) *
+                    100
+                )
+                return discountPercent > 0 ? (
+                  <span className="text-sm text-gray-500 line-through">
+                    ₹{unit.actualPrice}
+                  </span>
+                ) : null
+              })()}
+            </>
+          ) : (
+            <span className="text-lg font-bold text-gray-900">
+              Price not available
             </span>
           )}
         </div>
@@ -144,7 +169,7 @@ export default function ProductCard({ product }) {
             <ShoppingCart className="h-4 w-4 mr-2" />
             {t('product.addToCart')}
           </Button>
-          <Link href={`/product/${product.urlSlug}`}>
+          <Link href={`/product/${product.id}`}>
             <Button size="sm" className="flex-1">
               {t('product.buyNow')}
             </Button>

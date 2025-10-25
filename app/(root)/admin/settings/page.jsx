@@ -44,6 +44,8 @@ export default function AdminSettings() {
     userNotifications: true,
     analyticsEnabled: true,
     cacheEnabled: true,
+    geminiApiKey: '',
+    openaiApiKey: '',
   })
 
   useEffect(() => {
@@ -75,10 +77,29 @@ export default function AdminSettings() {
     return null
   }
 
-  const handleSave = () => {
-    // Here you would typically save to your backend
-    console.log('Saving settings:', settings)
-    // Show success message
+  const handleSave = async () => {
+    try {
+      const response = await fetch('/api/admin/settings', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          geminiApiKey: settings.geminiApiKey,
+          openaiApiKey: settings.openaiApiKey,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to save settings')
+      }
+
+      console.log('Settings saved successfully')
+      // You could add a toast notification here
+    } catch (error) {
+      console.error('Error saving settings:', error)
+      // You could add an error toast notification here
+    }
   }
 
   const handleReset = () => {
@@ -352,6 +373,53 @@ export default function AdminSettings() {
                     setSettings({ ...settings, cacheEnabled: checked })
                   }
                 />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* API Configuration */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Settings className="h-5 w-5 mr-2" />
+                API Configuration
+              </CardTitle>
+              <CardDescription>
+                Configure external API keys for enhanced functionality
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="openaiApiKey">OpenAI API Key</Label>
+                <Input
+                  id="openaiApiKey"
+                  type="password"
+                  placeholder="Enter your OpenAI API key (optional)"
+                  value={settings.openaiApiKey || ''}
+                  onChange={(e) =>
+                    setSettings({ ...settings, openaiApiKey: e.target.value })
+                  }
+                />
+                <p className="text-sm text-muted-foreground mt-1">
+                  Used for AI-powered product description generation. If not
+                  provided, the default key will be used.
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="geminiApiKey">Gemini API Key</Label>
+                <Input
+                  id="geminiApiKey"
+                  type="password"
+                  placeholder="Enter your Gemini API key (optional)"
+                  value={settings.geminiApiKey || ''}
+                  onChange={(e) =>
+                    setSettings({ ...settings, geminiApiKey: e.target.value })
+                  }
+                />
+                <p className="text-sm text-muted-foreground mt-1">
+                  Used for AI-powered image search. If not provided, the default
+                  key will be used.
+                </p>
               </div>
             </CardContent>
           </Card>

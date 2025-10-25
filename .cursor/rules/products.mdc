@@ -1,0 +1,48 @@
+# admin products adding  -
+/product -  there is a button for adding button  after clicking on it a new page opens up where admin will be adding products based on category and sub category
+
+you have to enter predefined categories and sub categories -
+Category,Subcategories
+Seeds, - "Maize, Paddy, Wheat, Vegetable"
+Fertilizers,- "Micronutrients, Majornutrients, Organic"
+Crop Protection, - "Herbicide, Insecticide, Fungicide, Seed Treatment"
+tools - this gonna be only category no sub category is there  so we can directly add products to tools easily okay
+
+
+add all the required fields  here as the ui  - any product you can see (http://localhost:3000/product/pioneer-maize-3355)  in /product/[slug]/page.jsx
+
+
+one extra advantage here we will be giving to admins is either he can upload the photoes by own  or by ai ---- based on the title the ai(gemini) will search images from google  and admin can select the photoes from there  admin can select multiple photoes too and add the photo there - admin can add extra photoes anytime  , admin can delete the existing photoes anytime  - all the photoes gonna be uploaded in cloudinary and link is stored in mongodb
+
+the environment variables i have already defined -
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=doxmvuss9
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=presentsir
+CLOUDINARY_API_KEY=518681168421954
+CLOUDINARY_API_SECRET=KFY5e3WcROTJWL5ozV79eNRf45M
+
+GEMINI_API_KEY=AIzaSyCc9hS-WixN9gh79cSeYiYWpvkvFdssMqo || give a ui where admin can add his own gemini api key   if added then the model will use the admins added gemini key otherwise miine api key okay
+
+
+
+
+
+
+
+# user products  showcase -
+
+in pages  of category/subcategory add the required  backned and in products too
+
+users must be able to see the all the reviews given by other admins to any particular prodict(only single comment no hirearchy , only text , no likes on comment)
+users can see the average start rating of the product , and can give own star rating   to that product , and many more 
+
+
+
+
+
+
+
+
+
+
+
+
