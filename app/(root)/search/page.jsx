@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Search, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -9,7 +9,7 @@ import ProductCard from '@/components/ProductCard'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 
-export default function SearchResultsPage() {
+function SearchResultsContent() {
   const searchParams = useSearchParams()
   const query = searchParams.get('q') || ''
 
@@ -150,5 +150,22 @@ export default function SearchResultsPage() {
         </>
       )}
     </div>
+  )
+}
+
+export default function SearchResultsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p>Loading search...</p>
+          </div>
+        </div>
+      }
+    >
+      <SearchResultsContent />
+    </Suspense>
   )
 }

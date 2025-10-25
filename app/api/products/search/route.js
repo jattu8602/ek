@@ -3,6 +3,9 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 // GET - Search products
 export async function GET(request) {
   try {
