@@ -15,7 +15,7 @@ const categoryImages = {
 
 async function getFeaturedProducts() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'
+    const baseUrl = process.env.NEXT_PUBLIC_URL
     const res = await fetch(`${baseUrl}/api/products?limit=8`, {
       next: { revalidate: 300 }, // ISR with 5min cache
     })
