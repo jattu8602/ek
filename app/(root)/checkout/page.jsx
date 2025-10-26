@@ -236,7 +236,10 @@ function CheckoutContent() {
   }
 
   const calculateTotal = () => {
-    return checkoutItems.reduce((total, item) => total + item.totalPrice, 0)
+    return checkoutItems.reduce((total, item) => {
+      const itemTotal = item.totalPrice || 0
+      return total + itemTotal
+    }, 0)
   }
 
   const getSelectedAddress = () => {
@@ -520,7 +523,7 @@ function CheckoutContent() {
                           </p>
                         </div>
                         <p className="font-semibold">
-                          ₹{item.totalPrice.toFixed(2)}
+                          ₹{(item.totalPrice || 0).toFixed(2)}
                         </p>
                       </div>
                     ))}
@@ -622,7 +625,7 @@ function CheckoutContent() {
                     <span>
                       {item.productName || 'Product'} × {item.quantity}
                     </span>
-                    <span>₹{item.totalPrice.toFixed(2)}</span>
+                    <span>₹{(item.totalPrice || 0).toFixed(2)}</span>
                   </div>
                 ))}
               </div>

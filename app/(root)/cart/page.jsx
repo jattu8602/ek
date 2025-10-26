@@ -127,6 +127,11 @@ export default function CartPage() {
   const handleBuyNow = (itemId) => {
     const item = cartItems.find((cartItem) => cartItem.id === itemId)
     if (item) {
+      const unit = item.product?.units?.find(
+        (u) => `${u.number} ${u.type}` === selectedUnits[itemId]
+      )
+      const totalPrice = unit ? unit.discountedPrice * quantities[itemId] : 0
+
       // Navigate to checkout with single item
       router.push(
         `/checkout?items=${encodeURIComponent(
@@ -136,6 +141,8 @@ export default function CartPage() {
               unitId: item.unitId,
               selectedUnit: selectedUnits[itemId],
               quantity: quantities[itemId],
+              productName: item.product?.name || 'Product',
+              totalPrice: totalPrice,
             },
           ])
         )}`
@@ -144,12 +151,21 @@ export default function CartPage() {
   }
 
   const handleCheckoutAll = () => {
-    const checkoutItems = cartItems.map((item) => ({
-      productId: item.productId,
-      unitId: item.unitId,
-      selectedUnit: selectedUnits[item.id],
-      quantity: quantities[item.id],
-    }))
+    const checkoutItems = cartItems.map((item) => {
+      const unit = item.product?.units?.find(
+        (u) => `${u.number} ${u.type}` === selectedUnits[item.id]
+      )
+      const totalPrice = unit ? unit.discountedPrice * quantities[item.id] : 0
+
+      return {
+        productId: item.productId,
+        unitId: item.unitId,
+        selectedUnit: selectedUnits[item.id],
+        quantity: quantities[item.id],
+        productName: item.product?.name || 'Product',
+        totalPrice: totalPrice,
+      }
+    })
 
     router.push(
       `/checkout?items=${encodeURIComponent(JSON.stringify(checkoutItems))}`
