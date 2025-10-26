@@ -17,12 +17,17 @@ function SearchResultsContent() {
   const [defaultProducts, setDefaultProducts] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingDefault, setIsLoadingDefault] = useState(false)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [error, setError] = useState(null)
+  const [hasMore, setHasMore] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
 
   // Fetch default products when no query
   useEffect(() => {
     if (!query || query.trim().length === 0) {
       setSearchResults([])
+      setCurrentPage(1)
+      setHasMore(true)
 
       // Fetch default products from all categories
       const fetchDefaultProducts = async () => {
@@ -30,14 +35,17 @@ function SearchResultsContent() {
         setError(null)
 
         try {
-          const response = await fetch('/api/products?limit=20')
+          const response = await fetch('/api/products?limit=20&page=1')
 
           if (!response.ok) {
             throw new Error('Failed to fetch products')
           }
 
-          const results = await response.json()
+          const data = await response.json()
+          // Handle both array format and object format
+          const results = Array.isArray(data) ? data : data.products || []
           setDefaultProducts(results)
+          setHasMore(results.length === 20) // If we got less than 20, no more pages
         } catch (error) {
           console.error('Default products error:', error)
           setError('Failed to load products. Please try again.')
@@ -55,10 +63,12 @@ function SearchResultsContent() {
     const fetchSearchResults = async () => {
       setIsLoading(true)
       setError(null)
+      setCurrentPage(1)
+      setHasMore(true)
 
       try {
         const response = await fetch(
-          `/api/products/search?q=${encodeURIComponent(query)}&limit=50`
+          `/api/products/search?q=${encodeURIComponent(query)}&limit=20&page=1`
         )
 
         if (!response.ok) {
@@ -67,6 +77,7 @@ function SearchResultsContent() {
 
         const results = await response.json()
         setSearchResults(results)
+        setHasMore(results.length === 20) // If we got less than 20, no more pages
       } catch (error) {
         console.error('Search error:', error)
         setError('Failed to search products. Please try again.')
@@ -78,6 +89,65 @@ function SearchResultsContent() {
 
     fetchSearchResults()
   }, [query])
+
+  // Load more products function
+  const loadMoreProducts = async () => {
+    if (isLoadingMore || !hasMore) return
+
+    setIsLoadingMore(true)
+    const nextPage = currentPage + 1
+
+    try {
+      let response
+      if (!query || query.trim().length === 0) {
+        // Load more default products
+        response = await fetch(`/api/products?limit=20&page=${nextPage}`)
+      } else {
+        // Load more search results
+        response = await fetch(
+          `/api/products/search?q=${encodeURIComponent(
+            query
+          )}&limit=20&page=${nextPage}`
+        )
+      }
+
+      if (!response.ok) {
+        throw new Error('Failed to load more products')
+      }
+
+      const data = await response.json()
+      const newProducts = Array.isArray(data) ? data : data.products || []
+
+      if (!query || query.trim().length === 0) {
+        setDefaultProducts((prev) => [...prev, ...newProducts])
+      } else {
+        setSearchResults((prev) => [...prev, ...newProducts])
+      }
+
+      setCurrentPage(nextPage)
+      setHasMore(newProducts.length === 20) // If we got less than 20, no more pages
+    } catch (error) {
+      console.error('Error loading more products:', error)
+      setError('Failed to load more products. Please try again.')
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
+
+  // Infinite scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop >=
+        document.documentElement.offsetHeight - 1000
+      ) {
+        loadMoreProducts()
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [currentPage, hasMore, isLoadingMore, query])
 
   if (!query || query.trim().length === 0) {
     return (
@@ -108,11 +178,46 @@ function SearchResultsContent() {
 
         {/* Default Products Grid */}
         {!isLoadingDefault && !error && defaultProducts.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {defaultProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {defaultProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+
+            {/* Load More Button */}
+            {hasMore && (
+              <div className="text-center mt-8">
+                <Button
+                  onClick={loadMoreProducts}
+                  disabled={isLoadingMore}
+                  variant="outline"
+                  className="min-w-[200px]"
+                >
+                  {isLoadingMore ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    'Load More Products'
+                  )}
+                </Button>
+              </div>
+            )}
+
+            {/* Loading More Indicator */}
+            {isLoadingMore && (
+              <div className="text-center mt-4">
+                <div className="flex items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                  <span className="text-muted-foreground">
+                    Loading more products...
+                  </span>
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {/* No Products */}
@@ -204,13 +309,36 @@ function SearchResultsContent() {
             ))}
           </div>
 
-          {/* Load More Button (if needed) */}
-          {searchResults.length >= 50 && (
+          {/* Load More Button */}
+          {hasMore && (
             <div className="text-center mt-8">
-              <p className="text-sm text-muted-foreground">
-                Showing first 50 results. Try refining your search for more
-                specific results.
-              </p>
+              <Button
+                onClick={loadMoreProducts}
+                disabled={isLoadingMore}
+                variant="outline"
+                className="min-w-[200px]"
+              >
+                {isLoadingMore ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  'Load More Results'
+                )}
+              </Button>
+            </div>
+          )}
+
+          {/* Loading More Indicator */}
+          {isLoadingMore && (
+            <div className="text-center mt-4">
+              <div className="flex items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                <span className="text-muted-foreground">
+                  Loading more results...
+                </span>
+              </div>
             </div>
           )}
         </>

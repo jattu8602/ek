@@ -11,7 +11,9 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const query = searchParams.get('q')
-    const limit = parseInt(searchParams.get('limit') || '8')
+    const limit = parseInt(searchParams.get('limit') || '20')
+    const page = parseInt(searchParams.get('page') || '1')
+    const skip = (page - 1) * limit
 
     if (!query || query.trim().length === 0) {
       return NextResponse.json([])
@@ -48,7 +50,15 @@ export async function GET(request) {
           },
         ],
       },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        images: true,
+        category: true,
+        subcategory: true,
+        rating: true,
+        reviewCount: true,
         units: {
           where: {
             status: 'ACTIVE',
@@ -56,7 +66,7 @@ export async function GET(request) {
           orderBy: {
             discountedPrice: 'asc',
           },
-          take: 1, // Get the cheapest unit for display
+          take: 1,
         },
       },
       orderBy: [
@@ -64,21 +74,22 @@ export async function GET(request) {
           name: 'asc',
         },
       ],
+      skip: skip,
       take: limit,
     })
 
-    // Format results for the search component
+    // Format results for the search component - return full product structure
     const searchResults = products.map((product) => ({
       id: product.id,
       name: product.name,
+      description: product.description,
       images: product.images || ['/placeholder-product.jpg'],
       image: product.images?.[0] || '/placeholder-product.jpg',
       category: product.category,
       subcategory: product.subcategory,
-      price: product.units[0]?.discountedPrice || 0,
-      unit: product.units[0]
-        ? `${product.units[0].number} ${product.units[0].type}`
-        : '',
+      rating: product.rating || 0,
+      reviewCount: product.reviewCount || 0,
+      units: product.units || [],
       url: `/product/${product.id}`,
     }))
 

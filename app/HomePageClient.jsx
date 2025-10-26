@@ -1,12 +1,13 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import ProductCard from '@/components/ProductCard'
 import { categories } from '@/data/products'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ArrowRight, Star, Truck, Shield, Clock } from 'lucide-react'
+import { ArrowRight, Star, Truck, Shield, Clock, Loader2 } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import {
   Carousel,
@@ -25,6 +26,34 @@ const categoryImages = {
 
 export default function HomePageClient({ featuredProducts }) {
   const { t } = useLanguage()
+  const [allProducts, setAllProducts] = useState(featuredProducts || [])
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [hasMoreProducts, setHasMoreProducts] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+
+  // Load more products for carousels
+  const loadMoreProducts = async () => {
+    if (isLoadingMore || !hasMoreProducts) return
+
+    setIsLoadingMore(true)
+    const nextPage = currentPage + 1
+
+    try {
+      const response = await fetch(`/api/products?limit=20&page=${nextPage}`)
+      if (!response.ok) throw new Error('Failed to load products')
+
+      const data = await response.json()
+      const newProducts = Array.isArray(data) ? data : data.products || []
+
+      setAllProducts((prev) => [...prev, ...newProducts])
+      setCurrentPage(nextPage)
+      setHasMoreProducts(newProducts.length === 20)
+    } catch (error) {
+      console.error('Error loading more products:', error)
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -118,7 +147,7 @@ export default function HomePageClient({ featuredProducts }) {
             className="w-full"
           >
             <CarouselContent className="-ml-2 md:-ml-4">
-              {featuredProducts.map((product) => (
+              {allProducts.map((product) => (
                 <CarouselItem
                   key={product.id}
                   className="pl-2 md:pl-4 basis-1/2 sm:basis-1/3 lg:basis-1/4"
@@ -142,6 +171,27 @@ export default function HomePageClient({ featuredProducts }) {
               <span>Swipe to see more</span>
             </div>
           </div>
+
+          {/* Load More Button */}
+          {hasMoreProducts && (
+            <div className="text-center mt-6">
+              <Button
+                onClick={loadMoreProducts}
+                disabled={isLoadingMore}
+                variant="outline"
+                size="sm"
+              >
+                {isLoadingMore ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  'Load More Products'
+                )}
+              </Button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -174,7 +224,7 @@ export default function HomePageClient({ featuredProducts }) {
               className="w-full"
             >
               <CarouselContent className="-ml-2 md:-ml-4">
-                {featuredProducts.slice(0, 8).map((product) => (
+                {allProducts.slice(0, 8).map((product) => (
                   <CarouselItem
                     key={product.id}
                     className="pl-2 md:pl-4 basis-1/2 sm:basis-1/3 lg:basis-1/4"
