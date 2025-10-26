@@ -107,26 +107,42 @@ export default function HomePageClient({ featuredProducts }) {
           </Link>
         </div>
 
-        <Carousel
-          opts={{
-            align: 'start',
-            loop: true,
-          }}
-          className="w-full"
-        >
-          <CarouselContent className="-ml-2 md:-ml-4">
-            {featuredProducts.map((product) => (
-              <CarouselItem
-                key={product.id}
-                className="pl-2 md:pl-4 basis-1/2 sm:basis-1/3 lg:basis-1/4"
-              >
-                <ProductCard product={product} />
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="hidden md:flex -left-12" />
-          <CarouselNext className="hidden md:flex -right-12" />
-        </Carousel>
+        <div className="relative">
+          <Carousel
+            opts={{
+              align: 'start',
+              loop: true,
+              dragFree: true,
+              containScroll: 'trimSnaps',
+            }}
+            className="w-full"
+          >
+            <CarouselContent className="-ml-2 md:-ml-4">
+              {featuredProducts.map((product) => (
+                <CarouselItem
+                  key={product.id}
+                  className="pl-2 md:pl-4 basis-1/2 sm:basis-1/3 lg:basis-1/4"
+                >
+                  <ProductCard product={product} />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden md:flex -left-12" />
+            <CarouselNext className="hidden md:flex -right-12" />
+          </Carousel>
+
+          {/* Mobile swipe indicator */}
+          <div className="md:hidden flex justify-center mt-4">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex gap-1">
+                <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                <div className="w-1.5 h-1.5 bg-muted-foreground/30 rounded-full"></div>
+                <div className="w-1.5 h-1.5 bg-muted-foreground/30 rounded-full"></div>
+              </div>
+              <span>Swipe to see more</span>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* New Arrivals Section */}
@@ -143,37 +159,46 @@ export default function HomePageClient({ featuredProducts }) {
             </div>
             <Badge variant="secondary" className="hidden md:flex">
               <Star className="h-3 w-3 mr-1" />
-              New
+              Fresh
             </Badge>
           </div>
 
-          <Carousel
-            opts={{
-              align: 'start',
-              loop: true,
-            }}
-            className="w-full"
-          >
-            <CarouselContent className="-ml-2 md:-ml-4">
-              {featuredProducts.slice(0, 8).map((product, index) => (
-                <CarouselItem
-                  key={product.id}
-                  className="pl-2 md:pl-4 basis-1/2 sm:basis-1/3 lg:basis-1/4"
-                >
-                  <div className="relative">
-                    {index < 3 && (
-                      <Badge className="absolute top-2 left-2 z-10 bg-accent text-accent-foreground">
-                        New
-                      </Badge>
-                    )}
+          <div className="relative">
+            <Carousel
+              opts={{
+                align: 'start',
+                loop: true,
+                dragFree: true,
+                containScroll: 'trimSnaps',
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {featuredProducts.slice(0, 8).map((product) => (
+                  <CarouselItem
+                    key={product.id}
+                    className="pl-2 md:pl-4 basis-1/2 sm:basis-1/3 lg:basis-1/4"
+                  >
                     <ProductCard product={product} />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="hidden md:flex -left-12" />
-            <CarouselNext className="hidden md:flex -right-12" />
-          </Carousel>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden md:flex -left-12" />
+              <CarouselNext className="hidden md:flex -right-12" />
+            </Carousel>
+
+            {/* Mobile swipe indicator */}
+            <div className="md:hidden flex justify-center mt-4">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex gap-1">
+                  <div className="w-1.5 h-1.5 bg-accent rounded-full"></div>
+                  <div className="w-1.5 h-1.5 bg-muted-foreground/30 rounded-full"></div>
+                  <div className="w-1.5 h-1.5 bg-muted-foreground/30 rounded-full"></div>
+                </div>
+                <span>Swipe to see more</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

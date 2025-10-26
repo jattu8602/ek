@@ -88,8 +88,8 @@ export default function ProductCard({ product }) {
   }
 
   return (
-    <Link href={`/product/${product.id}`} className="block">
-      <div className="group relative bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 touch-manipulation cursor-pointer">
+    <Link href={`/product/${product.id}`} className="block h-full">
+      <div className="group relative bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 touch-manipulation cursor-pointer h-full flex flex-col">
         {/* Product Image */}
         <div className="relative aspect-[4/3] lg:aspect-[3/2] overflow-hidden">
           <Image
@@ -159,7 +159,7 @@ export default function ProductCard({ product }) {
         </div>
 
         {/* Product Info */}
-        <div className="p-3 lg:p-2">
+        <div className="p-3 lg:p-2 flex flex-col flex-grow">
           {/* Product Name */}
           <h3 className="font-medium text-gray-900 mb-1.5 lg:mb-1 line-clamp-2 hover:text-primary transition-colors text-sm lg:text-xs leading-tight">
             {product.name}
@@ -259,7 +259,7 @@ export default function ProductCard({ product }) {
           )}
 
           {/* Action Buttons */}
-          <div className="flex gap-1.5 lg:gap-1">
+          <div className="flex gap-1.5 lg:gap-1 mt-auto">
             <Button
               variant="outline"
               size="sm"

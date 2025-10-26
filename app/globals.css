@@ -188,6 +188,31 @@
   .animate-scroll {
     animation: scroll 30s linear infinite;
   }
+
+  /* Smooth carousel scrolling */
+  .embla {
+    overflow: hidden;
+  }
+
+  .embla__container {
+    display: flex;
+    will-change: transform;
+  }
+
+  .embla__slide {
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+
+  /* Enhanced touch scrolling */
+  .embla__container {
+    touch-action: pan-y pinch-zoom;
+  }
+
+  /* Smooth momentum scrolling on iOS */
+  .embla {
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 /* App-specific styles */
