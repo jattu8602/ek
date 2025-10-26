@@ -171,27 +171,20 @@ export default function HomePageClient({ featuredProducts }) {
               <span>Swipe to see more</span>
             </div>
           </div>
+        </div>
 
-          {/* Load More Button */}
-          {hasMoreProducts && (
-            <div className="text-center mt-6">
-              <Button
-                onClick={loadMoreProducts}
-                disabled={isLoadingMore}
-                variant="outline"
-                size="sm"
-              >
-                {isLoadingMore ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Loading...
-                  </>
-                ) : (
-                  'Load More Products'
-                )}
-              </Button>
-            </div>
-          )}
+        {/* See All Products Button - Featured */}
+        <div className="text-center mt-8 md:hidden">
+          <Link href="/search">
+            <Button
+              variant="outline"
+              size="lg"
+              className="group bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20 hover:from-primary/20 hover:to-primary/10 hover:border-primary/40 transition-all duration-300 hover:scale-105 shadow-sm hover:shadow-md"
+            >
+              <span className="text-primary font-medium">See all Products</span>
+              <ArrowRight className="ml-2 h-4 w-4 text-primary group-hover:translate-x-1 transition-transform duration-300" />
+            </Button>
+          </Link>
         </div>
       </section>
 
@@ -249,6 +242,22 @@ export default function HomePageClient({ featuredProducts }) {
               </div>
             </div>
           </div>
+
+          {/* See All Products Button - New Arrivals */}
+          {/* <div className="text-center mt-8">
+            <Link href="/search">
+              <Button
+                variant="outline"
+                size="lg"
+                className="group bg-gradient-to-r from-accent/10 to-accent/5 border-accent/20 hover:from-accent/20 hover:to-accent/10 hover:border-accent/40 transition-all duration-300 hover:scale-105 shadow-sm hover:shadow-md"
+              >
+                <span className="text-accent font-medium">
+                  See all Products
+                </span>
+                <ArrowRight className="ml-2 h-4 w-4 text-accent group-hover:translate-x-1 transition-transform duration-300" />
+              </Button>
+            </Link>
+          </div> */}
         </div>
       </section>
 
