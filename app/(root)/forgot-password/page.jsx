@@ -27,22 +27,22 @@ export default function ForgotPasswordPage() {
 
   // Redirect if already logged in (but allow Google users to set up password)
   useEffect(() => {
-    console.log('Forgot password page - Session status:', status)
-    console.log('Forgot password page - Session data:', session)
-    console.log(
-      'Forgot password page - User password exists:',
-      session?.user?.password
-    )
+    // console.log('Forgot password page - Session status:', status)
+    // console.log('Forgot password page - Session data:', session)
+    // console.log(
+    //   'Forgot password page - User password exists:',
+    //   session?.user?.password
+    // )
 
     if (status === 'authenticated' && session) {
       // Allow Google users without password to stay on this page
       if (!session.user?.password) {
-        console.log('Google user without password - staying on page')
+        // console.log('Google user without password - staying on page')
         // Pre-fill email for Google users
         setEmail(session.user?.email || '')
         return
       }
-      console.log('User with password - redirecting to home')
+      // console.log('User with password - redirecting to home')
       // Redirect users with passwords back to home
       router.push('/')
     }

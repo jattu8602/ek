@@ -23,11 +23,23 @@ export async function GET(request) {
     }
 
     if (category) {
-      where.category = category
+      // Support multiple category formats (comma-separated)
+      const categoryFormats = category.split(',').map((c) => c.trim())
+      if (categoryFormats.length === 1) {
+        where.category = categoryFormats[0]
+      } else {
+        where.category = { in: categoryFormats }
+      }
     }
 
     if (subcategory) {
-      where.subcategory = subcategory
+      // Support multiple subcategory formats (comma-separated)
+      const subcategoryFormats = subcategory.split(',').map((s) => s.trim())
+      if (subcategoryFormats.length === 1) {
+        where.subcategory = subcategoryFormats[0]
+      } else {
+        where.subcategory = { in: subcategoryFormats }
+      }
     }
 
     if (search) {

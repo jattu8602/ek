@@ -54,7 +54,7 @@ export default function AdminSellersPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [selectedApplication, setSelectedApplication] = useState(null)
-  const [statusFilter, setStatusFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState('ALL')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [adminNotes, setAdminNotes] = useState('')
   const [selectedStatus, setSelectedStatus] = useState('')
@@ -70,7 +70,8 @@ export default function AdminSellersPage() {
     try {
       setLoading(true)
       const params = new URLSearchParams()
-      if (statusFilter) params.append('status', statusFilter)
+      if (statusFilter && statusFilter !== 'ALL')
+        params.append('status', statusFilter)
 
       const response = await fetch(`/api/admin/sellers?${params}`)
       const data = await response.json()
@@ -162,7 +163,7 @@ export default function AdminSellersPage() {
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Status</SelectItem>
+              <SelectItem value="ALL">All Status</SelectItem>
               <SelectItem value="PENDING">
                 {t('admin.status.pending')}
               </SelectItem>

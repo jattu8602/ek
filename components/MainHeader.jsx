@@ -33,7 +33,7 @@ const MainHeader = ({ isSticky = false }) => {
   const searchRef = useRef(null)
 
   // Debug session
-  console.log('MainHeader session:', { session, status })
+  // console.log('MainHeader session:', { session, status })
 
   const handleSignOut = () => {
     signOut({ callbackUrl: '/' })

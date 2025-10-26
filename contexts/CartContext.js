@@ -1,6 +1,12 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from 'react'
 import { useSession } from 'next-auth/react'
 import { useAuth } from './AuthContext'
 
@@ -12,9 +18,10 @@ export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([])
   const [favorites, setFavorites] = useState([])
   const [isLoading, setIsLoading] = useState(false)
+  const [hasFetchedData, setHasFetchedData] = useState(false)
 
   // Fetch cart items from API
-  const fetchCartItems = async () => {
+  const fetchCartItems = useCallback(async () => {
     if (!user) return
 
     try {
@@ -29,10 +36,10 @@ export function CartProvider({ children }) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [user?.id])
 
   // Fetch favorites from API
-  const fetchFavorites = async () => {
+  const fetchFavorites = useCallback(async () => {
     if (!user) return
 
     try {
@@ -47,17 +54,19 @@ export function CartProvider({ children }) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [user?.id])
 
   useEffect(() => {
-    if (user) {
+    if (user && !hasFetchedData) {
       fetchCartItems()
       fetchFavorites()
-    } else {
+      setHasFetchedData(true)
+    } else if (!user) {
       setCartItems([])
       setFavorites([])
+      setHasFetchedData(false)
     }
-  }, [user])
+  }, [user?.id, fetchCartItems, fetchFavorites, hasFetchedData])
 
   // Add item to cart
   const addToCart = async (

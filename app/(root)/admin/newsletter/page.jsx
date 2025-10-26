@@ -41,14 +41,15 @@ export default function AdminNewsletterPage() {
   const [subscribers, setSubscribers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState('ALL')
   const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0 })
 
   const fetchSubscribers = async () => {
     try {
       setLoading(true)
       const params = new URLSearchParams()
-      if (statusFilter) params.append('status', statusFilter)
+      if (statusFilter && statusFilter !== 'ALL')
+        params.append('status', statusFilter)
 
       const response = await fetch(`/api/admin/newsletter?${params}`)
       const data = await response.json()
@@ -137,7 +138,7 @@ export default function AdminNewsletterPage() {
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Subscribers</SelectItem>
+              <SelectItem value="ALL">All Subscribers</SelectItem>
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="inactive">Inactive</SelectItem>
             </SelectContent>

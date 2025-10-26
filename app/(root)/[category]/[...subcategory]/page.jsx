@@ -8,6 +8,10 @@ import ProductCard from '@/components/ProductCard'
 import FilterSidebar from '@/components/FilterSidebar'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useEffect, useState } from 'react'
+import {
+  createFlexibleQuery,
+  debugCategoryMatching,
+} from '@/lib/categoryHelpers'
 
 // Define the shape of the 'params' prop provided by Next.js
 
@@ -32,17 +36,14 @@ export default function CategoryPage({ params }) {
 
       try {
         setLoading(true)
-        const categoryName =
-          categories.find((c) => c.slug === decodeURIComponent(category))
-            ?.name || decodeURIComponent(category)
 
-        const subcategoryName = decodeURIComponent(subcategory)
+        // Debug category and subcategory matching
+        debugCategoryMatching(category, subcategory)
 
-        const response = await fetch(
-          `/api/products?category=${encodeURIComponent(
-            categoryName
-          )}&subcategory=${encodeURIComponent(subcategoryName)}`
-        )
+        // Create flexible query with multiple category and subcategory formats
+        const queryString = createFlexibleQuery(category, subcategory)
+
+        const response = await fetch(`/api/products?${queryString}`)
         if (response.ok) {
           const data = await response.json()
           setProducts(data.products)
