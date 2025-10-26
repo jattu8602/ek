@@ -154,8 +154,8 @@ function SearchResultsContent() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">All Products</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">All Products</h1>
+          <p className="text-muted-foreground text-sm md:text-base">
             Browse our complete range of agricultural products
           </p>
         </div>
@@ -179,7 +179,7 @@ function SearchResultsContent() {
         {/* Default Products Grid */}
         {!isLoadingDefault && !error && defaultProducts.length > 0 && (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {defaultProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -252,10 +252,10 @@ function SearchResultsContent() {
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">
+        <h1 className="text-2xl md:text-3xl font-bold mb-2">
           Search Results for "{query}"
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground text-sm md:text-base">
           {isLoading
             ? 'Searching...'
             : `${searchResults.length} products found`}
@@ -303,7 +303,7 @@ function SearchResultsContent() {
       {!isLoading && !error && searchResults.length > 0 && (
         <>
           {/* Results Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {searchResults.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
