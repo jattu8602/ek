@@ -14,16 +14,44 @@ function SearchResultsContent() {
   const query = searchParams.get('q') || ''
 
   const [searchResults, setSearchResults] = useState([])
+  const [defaultProducts, setDefaultProducts] = useState([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingDefault, setIsLoadingDefault] = useState(false)
   const [error, setError] = useState(null)
 
-  // Fetch search results
+  // Fetch default products when no query
   useEffect(() => {
     if (!query || query.trim().length === 0) {
       setSearchResults([])
+
+      // Fetch default products from all categories
+      const fetchDefaultProducts = async () => {
+        setIsLoadingDefault(true)
+        setError(null)
+
+        try {
+          const response = await fetch('/api/products?limit=20')
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch products')
+          }
+
+          const results = await response.json()
+          setDefaultProducts(results)
+        } catch (error) {
+          console.error('Default products error:', error)
+          setError('Failed to load products. Please try again.')
+          setDefaultProducts([])
+        } finally {
+          setIsLoadingDefault(false)
+        }
+      }
+
+      fetchDefaultProducts()
       return
     }
 
+    // Fetch search results when query exists
     const fetchSearchResults = async () => {
       setIsLoading(true)
       setError(null)
@@ -54,16 +82,54 @@ function SearchResultsContent() {
   if (!query || query.trim().length === 0) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <Search className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <h1 className="text-2xl font-bold mb-2">Search Products</h1>
-          <p className="text-muted-foreground mb-6">
-            Enter a search term to find products
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">All Products</h1>
+          <p className="text-muted-foreground">
+            Browse our complete range of agricultural products
           </p>
-          <Link href="/">
-            <Button>Go to Homepage</Button>
-          </Link>
         </div>
+
+        {/* Loading State */}
+        {isLoadingDefault && (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin mr-2" />
+            <span>Loading products...</span>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-12">
+            <div className="text-red-500 mb-4">{error}</div>
+            <Button onClick={() => window.location.reload()}>Try Again</Button>
+          </div>
+        )}
+
+        {/* Default Products Grid */}
+        {!isLoadingDefault && !error && defaultProducts.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {defaultProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
+
+        {/* No Products */}
+        {!isLoadingDefault && !error && defaultProducts.length === 0 && (
+          <div className="text-center py-12">
+            <Search className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <h2 className="text-xl font-semibold mb-2">
+              No products available
+            </h2>
+            <p className="text-muted-foreground mb-6">
+              We're working on adding more products. Please check back later.
+            </p>
+            <Link href="/">
+              <Button>Go to Homepage</Button>
+            </Link>
+          </div>
+        )}
       </div>
     )
   }

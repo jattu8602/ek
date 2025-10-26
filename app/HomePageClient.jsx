@@ -21,7 +21,7 @@ export default function HomePageClient({ featuredProducts }) {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative h-[400px] md:h-[500px] overflow-hidden">
+      <section className="relative h-[300px] sm:h-[350px] md:h-[500px] overflow-hidden">
         <Image
           src="/hero-banner.jpg"
           alt="Agricultural Products"
@@ -34,13 +34,15 @@ export default function HomePageClient({ featuredProducts }) {
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex items-center">
           <div className="container mx-auto px-4">
             <div className="max-w-xl text-white">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight leading-tight">
                 {t('home.hero.title')}
               </h1>
               <p className="text-lg mb-6">{t('home.hero.subtitle')}</p>
-              <Button size="lg" className="shadow-lg">
-                {t('home.hero.cta')} <ArrowRight className="ml-2" size={20} />
-              </Button>
+              <Link href="/search">
+                <Button size="lg" className="shadow-lg">
+                  {t('home.hero.cta')} <ArrowRight className="ml-2" size={20} />
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -50,11 +52,9 @@ export default function HomePageClient({ featuredProducts }) {
       <section className="container mx-auto px-4 py-12">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-3xl font-bold mb-2">
-              {t('home.bestsellers.title')}
-            </h2>
+            <h2 className="text-3xl font-bold mb-2">All Products</h2>
             <p className="text-muted-foreground">
-              {t('home.bestsellers.subtitle')}
+              Discover our complete range of agricultural products
             </p>
           </div>
           <Link href="/seeds">
