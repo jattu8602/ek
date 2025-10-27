@@ -67,9 +67,11 @@ export default function RelatedProducts({
   }
 
   return (
-    <div className="mt-12">
-      <h2 className="text-2xl font-bold mb-6">You May Also Like</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="mt-8 md:mt-12">
+      <h2 className="text-lg md:text-2xl font-bold mb-4 md:mb-6">
+        More Products for You
+      </h2>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
         {relatedProducts.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}

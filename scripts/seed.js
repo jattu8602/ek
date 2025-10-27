@@ -993,19 +993,46 @@ async function seedProducts(users) {
   return products
 }
 
-async function seedReviewsAndRatings(users, products) {
+async function seedReviewsAndRatings(users, products, deliveredOrders) {
   console.log('⭐ Seeding reviews and ratings...')
 
   let totalReviews = 0
+  let totalRatings = 0
+
+  // Get all order items from delivered orders
+  const deliveredOrderItems = []
+  for (const order of deliveredOrders) {
+    const orderItems = await prisma.orderItem.findMany({
+      where: { orderId: order.id },
+      include: { order: true },
+    })
+    deliveredOrderItems.push(...orderItems)
+  }
+
+  // Group by product to track which users can review each product
+  const productPurchasers = {}
+  for (const item of deliveredOrderItems) {
+    if (!productPurchasers[item.productId]) {
+      productPurchasers[item.productId] = new Set()
+    }
+    productPurchasers[item.productId].add(item.order.userId)
+  }
 
   for (const product of products) {
-    // Generate 5-15 reviews per product
-    const reviewCount = getRandomInt(5, 15)
-    const productUsers = getRandomElements(users, reviewCount)
+    const purchasers = productPurchasers[product.id] || new Set()
+    if (purchasers.size === 0) continue
+
+    // Generate 3-8 reviews per product (only from purchasers)
+    const reviewCount = Math.min(getRandomInt(3, 8), purchasers.size)
+    const productPurchaserIds = Array.from(purchasers)
+    const selectedPurchasers = getRandomElements(
+      users.filter((u) => productPurchaserIds.includes(u.id)),
+      reviewCount
+    )
 
     let totalRating = 0
 
-    for (const user of productUsers) {
+    for (const user of selectedPurchasers) {
       const rating = getRandomRating()
       const reviewText = getRandomElement(reviewTexts)
 
@@ -1017,6 +1044,8 @@ async function seedReviewsAndRatings(users, products) {
           stars: rating,
         },
       })
+      totalRating += rating
+      totalRatings++
 
       // Create review (80% chance)
       if (Math.random() < 0.8) {
@@ -1027,24 +1056,24 @@ async function seedReviewsAndRatings(users, products) {
             text: reviewText,
           },
         })
+        totalReviews++
       }
-
-      totalRating += rating
-      totalReviews++
     }
 
     // Update product rating and review count
-    const averageRating = totalRating / reviewCount
-    await prisma.product.update({
-      where: { id: product.id },
-      data: {
-        rating: Math.round(averageRating * 10) / 10, // Round to 1 decimal
-        reviewCount: reviewCount,
-      },
-    })
+    if (reviewCount > 0) {
+      const averageRating = totalRating / reviewCount
+      await prisma.product.update({
+        where: { id: product.id },
+        data: {
+          rating: Math.round(averageRating * 10) / 10, // Round to 1 decimal
+          reviewCount: reviewCount,
+        },
+      })
+    }
   }
 
-  console.log(`✅ Created ${totalReviews} reviews and ratings`)
+  console.log(`✅ Created ${totalReviews} reviews and ${totalRatings} ratings`)
 }
 
 async function seedUserAddresses(users) {
@@ -1079,8 +1108,10 @@ async function seedOrders(users, products) {
   console.log('📦 Seeding orders...')
 
   const orders = []
+  const deliveredOrders = [] // Track delivered orders for reviews
 
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 25; i++) {
+    // Increased from 15 to 25 for more review data
     const user = getRandomElement(users)
     const userAddresses = await prisma.userAddress.findMany({
       where: { userId: user.id },
@@ -1089,7 +1120,9 @@ async function seedOrders(users, products) {
     if (userAddresses.length === 0) continue
 
     const address = getRandomElement(userAddresses)
-    const orderStatus = getRandomElement(orderStatuses)
+    // Increase chance of DELIVERED orders for review data
+    const orderStatus =
+      Math.random() < 0.7 ? 'DELIVERED' : getRandomElement(orderStatuses)
 
     // Create order
     const order = await prisma.order.create({
@@ -1144,10 +1177,15 @@ async function seedOrders(users, products) {
     })
 
     orders.push(order)
+    if (orderStatus === 'DELIVERED') {
+      deliveredOrders.push(order)
+    }
   }
 
-  console.log(`✅ Created ${orders.length} orders`)
-  return orders
+  console.log(
+    `✅ Created ${orders.length} orders (${deliveredOrders.length} delivered)`
+  )
+  return { orders, deliveredOrders }
 }
 
 async function seedFavorites(users, products) {
@@ -1265,9 +1303,9 @@ async function main() {
     // Seed data in order
     const users = await seedUsers()
     const products = await seedProducts(users)
-    await seedReviewsAndRatings(users, products)
     await seedUserAddresses(users)
-    await seedOrders(users, products)
+    const { deliveredOrders } = await seedOrders(users, products)
+    await seedReviewsAndRatings(users, products, deliveredOrders)
     await seedFavorites(users, products)
     await seedCartItems(users, products)
     await seedRecentProducts(users, products)
