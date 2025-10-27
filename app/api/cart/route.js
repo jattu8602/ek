@@ -14,6 +14,15 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Validate user ID format (should be 24 characters for MongoDB ObjectId)
+    if (!session.user.id || session.user.id.length !== 24) {
+      console.error('Invalid user ID format:', session.user.id)
+      return NextResponse.json(
+        { error: 'Invalid user session' },
+        { status: 400 }
+      )
+    }
+
     const cartItems = await prisma.cartItem.findMany({
       where: {
         userId: session.user.id,
@@ -33,6 +42,16 @@ export async function GET() {
     return NextResponse.json(cartItems)
   } catch (error) {
     console.error('Error fetching cart items:', error)
+
+    // Handle specific Prisma ObjectID errors
+    if (error.code === 'P2023') {
+      console.error('ObjectID format error - user session may be corrupted')
+      return NextResponse.json(
+        { error: 'Session corrupted, please log in again' },
+        { status: 400 }
+      )
+    }
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -62,7 +81,7 @@ export async function POST(request) {
         { status: 400 }
       )
     }
-    
+
     // Check if item already exists in cart with same unit
     const existingItem = await prisma.cartItem.findFirst({
       where: {
