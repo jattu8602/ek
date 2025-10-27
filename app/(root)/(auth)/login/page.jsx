@@ -23,6 +23,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isRedirecting, setIsRedirecting] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
   const { data: session, status } = useSession()
@@ -61,6 +62,7 @@ export default function LoginPage() {
           setError(`Sign in failed: ${result.error}`)
         }
       } else if (result?.ok) {
+        setIsRedirecting(true)
         // Get the session to check user role
         const session = await getSession()
         console.log('Login successful, redirecting...', {
@@ -104,6 +106,7 @@ export default function LoginPage() {
           setError(`Failed to sign in with Google: ${result.error}`)
         }
       } else if (result?.ok) {
+        setIsRedirecting(true)
         // Get the session to check user role
         const session = await getSession()
         console.log('Login successful, redirecting...', {
@@ -124,7 +127,7 @@ export default function LoginPage() {
   }
 
   // Show loading state while checking authentication
-  if (status === 'loading') {
+  if (status === 'loading' || isRedirecting) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-md">
@@ -133,7 +136,9 @@ export default function LoginPage() {
               <div className="text-center">
                 <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                 <p className="text-muted-foreground">
-                  Checking authentication...
+                  {isRedirecting
+                    ? 'Redirecting...'
+                    : 'Checking authentication...'}
                 </p>
               </div>
             </CardContent>

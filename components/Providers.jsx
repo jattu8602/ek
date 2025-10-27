@@ -28,7 +28,11 @@ export default function Providers({ children }) {
   const memoizedChildren = useMemo(() => children, [children])
 
   return (
-    <SessionProvider>
+    <SessionProvider
+      refetchInterval={0}
+      refetchOnWindowFocus={false}
+      refetchWhenOffline={false}
+    >
       <QueryClientProvider client={queryClient}>
         <LanguageProvider>
           <AuthProvider>

@@ -219,7 +219,12 @@ const MainHeader = ({ isSticky = false }) => {
           {/* User Links - Hidden on mobile */}
           <div className="hidden lg:flex items-center gap-2">
             {status === 'loading' ? (
-              <div className="w-8 h-8 bg-muted rounded-full animate-pulse" />
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-muted rounded-full animate-pulse" />
+                <span className="text-sm text-muted-foreground">
+                  Loading...
+                </span>
+              </div>
             ) : session ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
