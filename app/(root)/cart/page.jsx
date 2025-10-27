@@ -34,6 +34,8 @@ export default function CartPage() {
   const {
     cartItems,
     isLoading,
+    isUpdatingCart,
+    isRemovingFromCart,
     updateCartQuantity,
     removeFromCart,
     fetchCartItems,
@@ -41,12 +43,9 @@ export default function CartPage() {
   const { requireAuth } = useAuth()
   const [quantities, setQuantities] = useState({})
   const [selectedUnits, setSelectedUnits] = useState({})
-  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    requireAuth(() => {
-      fetchCartItems()
-    })
+    fetchCartItems()
   }, [])
 
   useEffect(() => {
@@ -70,7 +69,6 @@ export default function CartPage() {
   const handleQuantityChange = async (itemId, newQuantity) => {
     if (newQuantity < 1) return
 
-    setLoading(true)
     try {
       const item = cartItems.find((cartItem) => cartItem.id === itemId)
       if (item) {
@@ -79,13 +77,10 @@ export default function CartPage() {
       }
     } catch (error) {
       console.error('Error updating quantity:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
   const handleUnitChange = async (itemId, newUnit) => {
-    setLoading(true)
     try {
       const item = cartItems.find((cartItem) => cartItem.id === itemId)
       if (item) {
@@ -105,13 +100,10 @@ export default function CartPage() {
       }
     } catch (error) {
       console.error('Error updating unit:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
   const handleRemoveItem = async (itemId) => {
-    setLoading(true)
     try {
       const item = cartItems.find((cartItem) => cartItem.id === itemId)
       if (item) {
@@ -119,8 +111,6 @@ export default function CartPage() {
       }
     } catch (error) {
       console.error('Error removing item:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -281,7 +271,7 @@ export default function CartPage() {
                         onValueChange={(value) =>
                           handleUnitChange(item.id, value)
                         }
-                        disabled={loading}
+                        disabled={isUpdatingCart}
                       >
                         <SelectTrigger className="w-32">
                           <SelectValue />
@@ -311,7 +301,7 @@ export default function CartPage() {
                               quantities[item.id] - 1
                             )
                           }
-                          disabled={loading || quantities[item.id] <= 1}
+                          disabled={isUpdatingCart || quantities[item.id] <= 1}
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
@@ -327,7 +317,7 @@ export default function CartPage() {
                               quantities[item.id] + 1
                             )
                           }
-                          disabled={loading}
+                          disabled={isUpdatingCart}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
@@ -337,7 +327,7 @@ export default function CartPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleRemoveItem(item.id)}
-                        disabled={loading}
+                        disabled={isRemovingFromCart}
                         className="text-destructive hover:text-destructive"
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
@@ -386,7 +376,7 @@ export default function CartPage() {
                 <Button
                   className="w-full"
                   onClick={handleCheckoutAll}
-                  disabled={loading}
+                  disabled={isUpdatingCart || isRemovingFromCart}
                 >
                   <CreditCard className="h-4 w-4 mr-2" />
                   Checkout All ({cartItems.length} items)

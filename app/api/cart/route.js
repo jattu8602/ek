@@ -62,7 +62,7 @@ export async function POST(request) {
         { status: 400 }
       )
     }
-
+    
     // Check if item already exists in cart with same unit
     const existingItem = await prisma.cartItem.findFirst({
       where: {

@@ -24,20 +24,20 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Skeleton } from '@/components/ui/skeleton'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useCart } from '@/contexts/CartContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { addRecentProduct } from '@/lib/recentProducts'
-import RelatedProducts from '@/components/RelatedProducts'
 
 export default function ProductDetail({ params }) {
   const router = useRouter()
   const { t } = useLanguage()
-  const { addToCart, isInFavorites, addToFavorites, removeFromFavorites } =
-    useCart()
+  const { addToCart, addToFavorites, removeFromFavorites, isInFavorites, isAddingToCart } = useCart()
+  const { requireAuth } = useAuth()
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [selectedUnit, setSelectedUnit] = useState('')
+  const [isLiked, setIsLiked] = useState(false)
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -100,103 +100,11 @@ export default function ProductDetail({ params }) {
   // Show loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        {/* Breadcrumbs Skeleton */}
-        <div className="container mx-auto px-4 py-4">
-          <Skeleton className="h-4 w-64" />
-        </div>
-
-        {/* Product Details Skeleton */}
-        <div className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Image Skeleton */}
-            <div className="space-y-4">
-              <Skeleton className="aspect-square w-full" />
-              <div className="flex gap-2">
-                <Skeleton className="w-16 h-16" />
-                <Skeleton className="w-16 h-16" />
-                <Skeleton className="w-16 h-16" />
-              </div>
-            </div>
-
-            {/* Product Info Skeleton */}
-            <div className="space-y-6">
-              <div>
-                <Skeleton className="h-8 w-3/4 mb-2" />
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="flex gap-1">
-                    <Skeleton className="h-4 w-4" />
-                    <Skeleton className="h-4 w-4" />
-                    <Skeleton className="h-4 w-4" />
-                    <Skeleton className="h-4 w-4" />
-                    <Skeleton className="h-4 w-4" />
-                  </div>
-                  <Skeleton className="h-4 w-20" />
-                </div>
-              </div>
-
-              {/* Pricing Skeleton */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <Skeleton className="h-8 w-32" />
-                  <Skeleton className="h-6 w-20" />
-                  <Skeleton className="h-6 w-16" />
-                </div>
-
-                {/* Unit Selection Skeleton */}
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-
-                {/* Quantity Skeleton */}
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-16" />
-                  <div className="flex items-center gap-4">
-                    <Skeleton className="h-10 w-10" />
-                    <Skeleton className="h-6 w-8" />
-                    <Skeleton className="h-10 w-10" />
-                  </div>
-                </div>
-
-                {/* Action Buttons Skeleton */}
-                <div className="flex gap-4">
-                  <Skeleton className="h-12 flex-1" />
-                  <Skeleton className="h-12 w-12" />
-                  <Skeleton className="h-12 w-12" />
-                </div>
-
-                <Skeleton className="h-12 w-full" />
-              </div>
-            </div>
-          </div>
-
-          {/* Description and Specs Skeleton */}
-          <div className="mt-12 space-y-6">
-            <div>
-              <Skeleton className="h-6 w-32 mb-4" />
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-3/4" />
-            </div>
-
-            <div>
-              <Skeleton className="h-6 w-40 mb-4" />
-              <div className="grid grid-cols-2 gap-4">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-full" />
-              </div>
-            </div>
-          </div>
-
-          {/* Reviews Skeleton */}
-          <div className="mt-12">
-            <Skeleton className="h-10 w-48 mb-6" />
-            <div className="text-center py-8">
-              <Skeleton className="h-4 w-32 mx-auto" />
-            </div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <div className="animate-pulse">
+            <div className="h-8 bg-muted rounded w-1/3 mx-auto mb-4"></div>
+            <div className="h-4 bg-muted rounded w-1/2 mx-auto"></div>
           </div>
         </div>
       </div>
@@ -226,20 +134,37 @@ export default function ProductDetail({ params }) {
   )
 
   const handleAddToCart = () => {
-    const unit = product.units?.find(
-      (u) => `${u.number} ${u.type}` === selectedUnit
-    )
-    if (unit) {
-      addToCart(product.id, quantity, unit.id, selectedUnit)
-    }
+    requireAuth(() => {
+      const unit = product.units?.find(
+        (u) => `${u.number} ${u.type}` === selectedUnit
+      )
+      if (unit) {
+        addToCart(product.id, quantity, unit.id, selectedUnit)
+      } else {
+        // Fallback to first unit if no unit selected
+        if (product.units && product.units.length > 0) {
+          const firstUnit = product.units[0]
+          addToCart(
+            product.id,
+            quantity,
+            firstUnit.id,
+            `${firstUnit.number} ${firstUnit.type}`
+          )
+        } else {
+          addToCart(product.id, quantity)
+        }
+      }
+    })
   }
 
   const handleToggleFavorite = () => {
-    if (isInFavorites(product.id)) {
-      removeFromFavorites(product.id)
-    } else {
-      addToFavorites(product.id)
-    }
+    requireAuth(() => {
+      if (isInFavorites(product.id)) {
+        removeFromFavorites(product.id)
+      } else {
+        addToFavorites(product.id)
+      }
+    })
   }
 
   return (
@@ -410,9 +335,9 @@ export default function ProductDetail({ params }) {
 
               {/* Action Buttons */}
               <div className="flex gap-4">
-                <Button size="lg" className="flex-1" onClick={handleAddToCart}>
+                <Button size="lg" className="flex-1" onClick={handleAddToCart} disabled={isAddingToCart}>
                   <ShoppingCart className="mr-2 h-4 w-4" />
-                  Add to Cart
+                  {isAddingToCart ? 'Adding...' : 'Add to Cart'}
                 </Button>
                 <Button
                   size="lg"
@@ -421,11 +346,7 @@ export default function ProductDetail({ params }) {
                 >
                   <Heart
                     size={20}
-                    className={
-                      isInFavorites(product.id)
-                        ? 'fill-red-500 text-red-500'
-                        : ''
-                    }
+                    className={isInFavorites(product.id) ? 'fill-red-500 text-red-500' : ''}
                   />
                 </Button>
                 <Button size="lg" variant="outline">
@@ -460,60 +381,54 @@ export default function ProductDetail({ params }) {
                 Buy Now
               </Button>
             </div>
+          </div>
+        </div>
 
-            {/* Description */}
-            <div className="mt-8">
-              <h3 className="text-xl font-semibold mb-4">Description</h3>
+        {/* Product Description */}
+        <div className="mt-12">
+          <Tabs defaultValue="description" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="description">Description</TabsTrigger>
+              <TabsTrigger value="specifications">Specifications</TabsTrigger>
+              <TabsTrigger value="reviews">Reviews</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="description" className="mt-6">
               <div className="prose max-w-none">
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-muted-foreground">
                   {product.description || 'No description available.'}
                 </p>
               </div>
-            </div>
+            </TabsContent>
 
-            {/* Specifications */}
-            <div className="mt-8">
-              <h3 className="text-xl font-semibold mb-4">Specifications</h3>
+            <TabsContent value="specifications" className="mt-6">
               <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex justify-between py-2 border-b border-gray-100">
-                    <span className="font-medium text-gray-600">Category:</span>
-                    <span className="text-gray-900">{product.category}</span>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <span className="font-medium">Category:</span>
+                    <span className="ml-2">{product.category}</span>
                   </div>
-                  <div className="flex justify-between py-2 border-b border-gray-100">
-                    <span className="font-medium text-gray-600">
-                      Subcategory:
-                    </span>
-                    <span className="text-gray-900">{product.subcategory}</span>
+                  <div>
+                    <span className="font-medium">Subcategory:</span>
+                    <span className="ml-2">{product.subcategory}</span>
                   </div>
-                  <div className="flex justify-between py-2 border-b border-gray-100">
-                    <span className="font-medium text-gray-600">
-                      Available Units:
-                    </span>
-                    <span className="text-gray-900">
+                  <div>
+                    <span className="font-medium">Available Units:</span>
+                    <span className="ml-2">
                       {product.units
                         ?.map((unit) => `${unit.number} ${unit.type}`)
                         .join(', ')}
                     </span>
                   </div>
-                  <div className="flex justify-between py-2 border-b border-gray-100">
-                    <span className="font-medium text-gray-600">Status:</span>
-                    <span className="text-gray-900 capitalize">
+                  <div>
+                    <span className="font-medium">Status:</span>
+                    <span className="ml-2 capitalize">
                       {product.status?.toLowerCase()}
                     </span>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Reviews Section */}
-        <div className="mt-12">
-          <Tabs defaultValue="reviews" className="w-full">
-            <TabsList className="grid w-full grid-cols-1">
-              <TabsTrigger value="reviews">Reviews</TabsTrigger>
-            </TabsList>
+            </TabsContent>
 
             <TabsContent value="reviews" className="mt-6">
               <div className="text-center py-8">
@@ -525,13 +440,6 @@ export default function ProductDetail({ params }) {
             </TabsContent>
           </Tabs>
         </div>
-
-        {/* Related Products */}
-        <RelatedProducts
-          category={product.category}
-          subcategory={product.subcategory}
-          currentProductId={product.id}
-        />
       </div>
     </div>
   )

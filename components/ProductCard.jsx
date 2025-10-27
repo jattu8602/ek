@@ -20,7 +20,7 @@ import { useLanguage } from '@/contexts/LanguageContext'
 export default function ProductCard({ product }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [selectedUnit, setSelectedUnit] = useState('')
-  const { addToCart, addToFavorites, removeFromFavorites, isInFavorites } =
+  const { addToCart, addToFavorites, removeFromFavorites, isInFavorites, isAddingToCart } =
     useCart()
   const { requireAuth } = useAuth()
   const { t } = useLanguage()
@@ -264,6 +264,7 @@ export default function ProductCard({ product }) {
               variant="outline"
               size="sm"
               className="flex-1 h-8 text-xs sm:h-8 md:h-9 lg:h-7 sm:text-xs md:text-sm lg:text-[10px]"
+              disabled={isAddingToCart}
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
@@ -272,9 +273,11 @@ export default function ProductCard({ product }) {
             >
               <ShoppingCart className="h-3 w-3 mr-1 sm:h-3 sm:w-3 md:h-4 md:w-4 lg:h-2.5 lg:w-2.5" />
               <span className="hidden sm:inline lg:hidden">
-                {t('product.addToCart')}
+                {isAddingToCart ? 'Adding...' : t('product.addToCart')}
               </span>
-              <span className="sm:hidden lg:inline">Add</span>
+              <span className="sm:hidden lg:inline">
+                {isAddingToCart ? 'Adding...' : 'Add'}
+              </span>
             </Button>
             <Button
               size="sm"
