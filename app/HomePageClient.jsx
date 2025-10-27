@@ -58,8 +58,8 @@ export default function HomePageClient({ featuredProducts }) {
   return (
     <div className="min-h-screen bg-background">
       {/* Top Announcement Bar */}
-      <div className="bg-primary text-primary-foreground py-2 px-4 text-center text-sm">
-        <p>
+      <div className="bg-primary text-primary-foreground py-2 px-4 text-center text-[10px] sm:text-xs md:text-sm">
+        <p className="whitespace-nowrap overflow-hidden text-ellipsis">
           🌱 Free shipping on orders over ₹500 | Expert farming support
           available
         </p>
@@ -73,7 +73,7 @@ export default function HomePageClient({ featuredProducts }) {
           priority
           sizes="100vw"
           quality={85}
-          className="object-cover"
+          className="object-cover object-right md:object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent flex items-center">
           <div className="container mx-auto px-4">

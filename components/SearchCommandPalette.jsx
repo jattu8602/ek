@@ -129,11 +129,11 @@ export default function SearchCommandPalette({
                     key={product.id}
                     value={product.name}
                     onSelect={() => handleProductClick(product)}
-                    className={`flex items-center gap-3 p-3 cursor-pointer ${
-                      index === selectedIndex ? 'bg-accent' : ''
+                    className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 cursor-pointer ${
+                      index === selectedIndex ? 'bg-[#EFF2F5]' : ''
                     }`}
                   >
-                    <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-muted">
+                    <div className="relative w-8 h-8 md:w-12 md:h-12 rounded-lg overflow-hidden bg-muted">
                       <Image
                         src={product.image}
                         alt={product.name}
@@ -142,12 +142,14 @@ export default function SearchCommandPalette({
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate">{product.name}</div>
-                      <div className="text-sm text-muted-foreground truncate">
+                      <div className="font-medium text-sm md:text-base truncate">
+                        {product.name}
+                      </div>
+                      <div className="text-xs md:text-sm text-muted-foreground truncate">
                         {product.category} • {product.subcategory}
                       </div>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="font-semibold text-primary">
+                        <span className="font-semibold text-primary text-sm md:text-base">
                           ₹{product.price}
                         </span>
                         {product.unit && (
@@ -163,8 +165,10 @@ export default function SearchCommandPalette({
                 {currentQuery.trim().length > 0 && (
                   <CommandItem
                     onSelect={handleSearchAll}
-                    className={`flex items-center gap-2 p-3 cursor-pointer ${
-                      selectedIndex === searchResults.length ? 'bg-accent' : ''
+                    className={`flex items-center gap-2 p-2 md:p-3 cursor-pointer ${
+                      selectedIndex === searchResults.length
+                        ? 'bg-[#EFF2F5]'
+                        : ''
                     }`}
                   >
                     <Search className="h-4 w-4" />
@@ -184,17 +188,17 @@ export default function SearchCommandPalette({
                       key={product.id}
                       value={product.name}
                       onSelect={() => handleProductClick(product)}
-                      className={`flex items-center gap-3 p-3 cursor-pointer ${
+                      className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 cursor-pointer ${
                         index +
                           (searchResults.length > 0
                             ? searchResults.length + 1
                             : 0) ===
                         selectedIndex
-                          ? 'bg-accent'
+                          ? 'bg-[#EFF2F5]'
                           : ''
                       }`}
                     >
-                      <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-muted">
+                      <div className="relative w-8 h-8 md:w-12 md:h-12 rounded-lg overflow-hidden bg-muted">
                         <Image
                           src={product.image}
                           alt={product.name}
@@ -203,14 +207,14 @@ export default function SearchCommandPalette({
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate">
+                        <div className="font-medium text-sm md:text-base truncate">
                           {product.name}
                         </div>
-                        <div className="text-sm text-muted-foreground truncate">
+                        <div className="text-xs md:text-sm text-muted-foreground truncate">
                           {product.category} • {product.subcategory}
                         </div>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="font-semibold text-primary">
+                          <span className="font-semibold text-primary text-sm md:text-base">
                             ₹{product.price}
                           </span>
                           {product.unit && (
@@ -313,11 +317,11 @@ export default function SearchCommandPalette({
                     key={product.id}
                     value={product.name}
                     onSelect={() => handleProductClick(product)}
-                    className={`flex items-center gap-3 p-3 cursor-pointer ${
-                      index === selectedIndex ? 'bg-accent' : ''
+                    className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 cursor-pointer ${
+                      index === selectedIndex ? 'bg-[#EFF2F5]' : ''
                     }`}
                   >
-                    <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-muted">
+                    <div className="relative w-8 h-8 md:w-12 md:h-12 rounded-lg overflow-hidden bg-muted">
                       <Image
                         src={product.image}
                         alt={product.name}
@@ -326,12 +330,14 @@ export default function SearchCommandPalette({
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate">{product.name}</div>
-                      <div className="text-sm text-muted-foreground truncate">
+                      <div className="font-medium text-sm md:text-base truncate">
+                        {product.name}
+                      </div>
+                      <div className="text-xs md:text-sm text-muted-foreground truncate">
                         {product.category} • {product.subcategory}
                       </div>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="font-semibold text-primary">
+                        <span className="font-semibold text-primary text-sm md:text-base">
                           ₹{product.price}
                         </span>
                         {product.unit && (
@@ -348,7 +354,9 @@ export default function SearchCommandPalette({
                   <CommandItem
                     onSelect={handleSearchAll}
                     className={`flex items-center gap-2 p-3 cursor-pointer ${
-                      selectedIndex === searchResults.length ? 'bg-accent' : ''
+                      selectedIndex === searchResults.length
+                        ? 'bg-[#EFF2F5]'
+                        : ''
                     }`}
                   >
                     <Search className="h-4 w-4" />
@@ -368,17 +376,17 @@ export default function SearchCommandPalette({
                       key={product.id}
                       value={product.name}
                       onSelect={() => handleProductClick(product)}
-                      className={`flex items-center gap-3 p-3 cursor-pointer ${
+                      className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 cursor-pointer ${
                         index +
                           (searchResults.length > 0
                             ? searchResults.length + 1
                             : 0) ===
                         selectedIndex
-                          ? 'bg-accent'
+                          ? 'bg-[#EFF2F5]'
                           : ''
                       }`}
                     >
-                      <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-muted">
+                      <div className="relative w-8 h-8 md:w-12 md:h-12 rounded-lg overflow-hidden bg-muted">
                         <Image
                           src={product.image}
                           alt={product.name}
@@ -387,14 +395,14 @@ export default function SearchCommandPalette({
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate">
+                        <div className="font-medium text-sm md:text-base truncate">
                           {product.name}
                         </div>
-                        <div className="text-sm text-muted-foreground truncate">
+                        <div className="text-xs md:text-sm text-muted-foreground truncate">
                           {product.category} • {product.subcategory}
                         </div>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="font-semibold text-primary">
+                          <span className="font-semibold text-primary text-sm md:text-base">
                             ₹{product.price}
                           </span>
                           {product.unit && (

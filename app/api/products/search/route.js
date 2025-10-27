@@ -79,19 +79,26 @@ export async function GET(request) {
     })
 
     // Format results for the search component - return full product structure
-    const searchResults = products.map((product) => ({
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      images: product.images || ['/placeholder-product.jpg'],
-      image: product.images?.[0] || '/placeholder-product.jpg',
-      category: product.category,
-      subcategory: product.subcategory,
-      rating: product.rating || 0,
-      reviewCount: product.reviewCount || 0,
-      units: product.units || [],
-      url: `/product/${product.id}`,
-    }))
+    const searchResults = products.map((product) => {
+      const cheapestUnit = product.units?.[0]
+      return {
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        images: product.images || ['/placeholder-product.jpg'],
+        image: product.images?.[0] || '/placeholder-product.jpg',
+        category: product.category,
+        subcategory: product.subcategory,
+        rating: product.rating || 0,
+        reviewCount: product.reviewCount || 0,
+        price: cheapestUnit?.discountedPrice || cheapestUnit?.actualPrice || 0,
+        unit: cheapestUnit
+          ? `${cheapestUnit.number}${cheapestUnit.type}`
+          : null,
+        units: product.units || [],
+        url: `/product/${product.id}`,
+      }
+    })
 
     return NextResponse.json(searchResults)
   } catch (error) {
