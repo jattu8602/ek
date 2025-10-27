@@ -322,13 +322,16 @@ const MainHeader = ({ isSticky = false }) => {
                 </Link>
               </>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              className="hidden lg:inline-flex"
-            >
-              Sell with us
-            </Button>
+            <Link href="/sell-with-us">
+              <Button
+                variant="outline"
+                size="sm"
+                className="hidden lg:inline-flex"
+              >
+                Sell with us
+              </Button>
+            </Link>
+
             <Link href="/cart">
               <Button variant="default" size="sm" className="relative">
                 <ShoppingCart size={18} className="mr-1" />
