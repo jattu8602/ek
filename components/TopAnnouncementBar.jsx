@@ -41,7 +41,7 @@ const TopAnnouncementBar = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="  h-8 px-3 bg-[#84940A] hover:bg-[#84940A]/80"
+                className="h-8 px-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20"
               >
                 <Globe size={16} className="mr-2" />
                 <span className="text-sm font-medium">
