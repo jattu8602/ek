@@ -50,7 +50,10 @@ const MainHeader = ({ isSticky = false }) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setIsSearchOpen(false)
       }
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+      if (
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target)
+      ) {
         setIsMobileMenuOpen(false)
       }
     }
@@ -100,19 +103,58 @@ const MainHeader = ({ isSticky = false }) => {
       `}
     >
       <div className="container mx-auto px-4 py-3">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
           {/* Mobile Menu Button */}
           <Button
             variant="ghost"
             size="sm"
-            className="lg:hidden"
+            className="lg:hidden shrink-0"
             onClick={toggleMobileMenu}
           >
             <Menu size={20} />
           </Button>
 
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 shrink-0">
+          {/* Mobile Search Bar - Centered */}
+          <div className="flex-1 lg:hidden">
+            <div className="relative w-full max-w-sm mx-auto" ref={searchRef}>
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                size={16}
+              />
+              <Input
+                placeholder="Search..."
+                className="pl-8 pr-8 h-9 text-sm"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setIsSearchOpen(true)}
+                onKeyDown={handleSearchSubmit}
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                  onClick={handleClearSearch}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
+              {isSearchOpen && (
+                <div className="absolute top-full left-0 right-0 z-50 mt-1">
+                  <SearchCommandPalette
+                    open={isSearchOpen}
+                    onOpenChange={setIsSearchOpen}
+                    isDropdown={true}
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Logo - Desktop Only */}
+          <Link href="/" className="hidden lg:flex items-center gap-2 shrink-0">
             <Image
               src="/logo.png"
               alt="Logo"
@@ -120,7 +162,7 @@ const MainHeader = ({ isSticky = false }) => {
               height={40}
               className="w-10 h-10"
             />
-            <span className="hidden md:block font-bold text-lg text-foreground">
+            <span className="font-bold text-lg text-foreground">
               Ekta Krishi Kendra
             </span>
           </Link>
@@ -163,6 +205,16 @@ const MainHeader = ({ isSticky = false }) => {
               )}
             </div>
           </div>
+
+          {/* Cart Button - Mobile */}
+          <Link href="/cart" className="lg:hidden shrink-0">
+            <Button variant="default" size="sm" className="relative">
+              <ShoppingCart size={18} />
+              <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                {getCartItemsCount()}
+              </span>
+            </Button>
+          </Link>
 
           {/* User Links - Hidden on mobile */}
           <div className="hidden lg:flex items-center gap-2">
@@ -287,8 +339,11 @@ const MainHeader = ({ isSticky = false }) => {
         {/* Mobile Menu Overlay */}
         {isMobileMenuOpen && (
           <div className="lg:hidden">
-            <div className="fixed inset-0 z-50 bg-black/50" onClick={closeMobileMenu} />
-            <div 
+            <div
+              className="fixed inset-0 z-50 bg-black/50"
+              onClick={closeMobileMenu}
+            />
+            <div
               ref={mobileMenuRef}
               className="fixed top-0 left-0 z-50 w-80 h-full bg-background border-r border-border shadow-lg transform transition-transform duration-300 ease-in-out"
             >
@@ -307,52 +362,9 @@ const MainHeader = ({ isSticky = false }) => {
                       Ekta Krishi Kendra
                     </span>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={closeMobileMenu}
-                  >
+                  <Button variant="ghost" size="sm" onClick={closeMobileMenu}>
                     <X size={20} />
                   </Button>
-                </div>
-
-                {/* Mobile Search Bar */}
-                <div className="p-4 border-b border-border">
-                  <div className="relative" ref={searchRef}>
-                    <Search
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                      size={20}
-                    />
-                    <Input
-                      placeholder="Search products..."
-                      className="pl-10 pr-10"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onFocus={() => setIsSearchOpen(true)}
-                      onKeyDown={handleSearchSubmit}
-                    />
-                    {searchQuery && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
-                        onClick={handleClearSearch}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                    {isSearchOpen && (
-                      <div className="absolute top-full left-0 right-0 z-50 mt-1">
-                        <SearchCommandPalette
-                          open={isSearchOpen}
-                          onOpenChange={setIsSearchOpen}
-                          isDropdown={true}
-                          searchQuery={searchQuery}
-                          setSearchQuery={setSearchQuery}
-                        />
-                      </div>
-                    )}
-                  </div>
                 </div>
 
                 {/* Mobile Navigation */}
@@ -381,7 +393,9 @@ const MainHeader = ({ isSticky = false }) => {
                           </Avatar>
                           <div className="flex-1 min-w-0">
                             {session.user?.name && (
-                              <p className="font-medium truncate">{session.user.name}</p>
+                              <p className="font-medium truncate">
+                                {session.user.name}
+                              </p>
                             )}
                             {session.user?.email && (
                               <p className="text-sm text-muted-foreground truncate">
@@ -390,7 +404,7 @@ const MainHeader = ({ isSticky = false }) => {
                             )}
                           </div>
                         </div>
-                        
+
                         <div className="space-y-1">
                           <Link
                             href="/profile"
