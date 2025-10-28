@@ -29,9 +29,8 @@ export default function Providers({ children }) {
 
   return (
     <SessionProvider
-      refetchInterval={5 * 60}
+      refetchInterval={0}
       refetchOnWindowFocus={true}
-      refetchWhenOffline={false}
       basePath="/api/auth"
     >
       <QueryClientProvider client={queryClient}>

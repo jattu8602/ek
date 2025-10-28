@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ArrowRight, Star, Truck, Shield, Clock, Loader2 } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { useSession } from 'next-auth/react'
+import { useAuthSession } from '@/hooks/useAuthSession'
 import {
   Carousel,
   CarouselContent,
@@ -27,7 +27,7 @@ const categoryImages = {
 
 export default function HomePageClient({ featuredProducts }) {
   const { t } = useLanguage()
-  const { data: session, status } = useSession()
+  const { session, status } = useAuthSession()
   const [allProducts, setAllProducts] = useState(featuredProducts || [])
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [hasMoreProducts, setHasMoreProducts] = useState(true)
