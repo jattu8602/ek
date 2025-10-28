@@ -54,7 +54,7 @@ export default function LoginPage() {
 
         // Retry mechanism to get session after OAuth
         let retries = 0
-        const maxRetries = 5
+        const maxRetries = 10
 
         const checkSession = async () => {
           try {
@@ -63,19 +63,26 @@ export default function LoginPage() {
               session: !!freshSession,
               user: freshSession?.user?.email,
               role: freshSession?.user?.role,
+              id: freshSession?.user?.id,
               retry: retries + 1,
+              timestamp: new Date().toISOString(),
             })
 
-            if (freshSession?.user) {
+            if (freshSession?.user && freshSession.user.id) {
               console.log('OAuth callback - user authenticated:', {
                 email: freshSession.user?.email,
                 role: freshSession.user?.role,
+                id: freshSession.user?.id,
               })
-              if (freshSession.user?.role === 'ADMIN') {
-                router.push('/admin')
-              } else {
-                router.push('/')
-              }
+
+              // Small delay to ensure session is fully established
+              setTimeout(() => {
+                if (freshSession.user?.role === 'ADMIN') {
+                  router.push('/admin')
+                } else {
+                  router.push('/')
+                }
+              }, 500)
               return
             }
 

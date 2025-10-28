@@ -13,12 +13,23 @@ export function AuthProvider({ children }) {
   const router = useRouter()
 
   useEffect(() => {
+    console.log('AuthContext useEffect:', {
+      status,
+      hasSession: !!session,
+      userEmail: session?.user?.email,
+      userRole: session?.user?.role,
+      userId: session?.user?.id,
+      timestamp: new Date().toISOString(),
+    })
+
     if (status === 'loading') {
       setIsLoading(true)
     } else if (status === 'authenticated') {
+      console.log('Setting authenticated user:', session.user)
       setUser(session.user)
       setIsLoading(false)
     } else {
+      console.log('User not authenticated, clearing user state')
       setUser(null)
       setIsLoading(false)
     }
