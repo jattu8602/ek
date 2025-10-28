@@ -1,39 +1,42 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
-import { useSession } from 'next-auth/react'
+import { createContext, useContext, useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { useRouter } from 'next/navigation'
+import { syncSession, setLoading } from '@/store/authSlice'
 
 const AuthContext = createContext()
 
 export function AuthProvider({ children }) {
-  const { data: session, status } = useSession()
-  const [user, setUser] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const dispatch = useDispatch()
+  const {
+    user,
+    isAuthenticated,
+    loading: isLoading,
+  } = useSelector((state) => state.auth)
   const router = useRouter()
 
+  // Sync with server session on mount
   useEffect(() => {
-    console.log('AuthContext useEffect:', {
-      status,
-      hasSession: !!session,
-      userEmail: session?.user?.email,
-      userRole: session?.user?.role,
-      userId: session?.user?.id,
-      timestamp: new Date().toISOString(),
-    })
+    const initializeAuth = async () => {
+      try {
+        console.log('AuthContext: Syncing with server session...')
+        dispatch(setLoading(true))
 
-    if (status === 'loading') {
-      setIsLoading(true)
-    } else if (status === 'authenticated') {
-      console.log('Setting authenticated user:', session.user)
-      setUser(session.user)
-      setIsLoading(false)
-    } else {
-      console.log('User not authenticated, clearing user state')
-      setUser(null)
-      setIsLoading(false)
+        // Fetch session from server
+        const response = await fetch('/api/auth/session')
+        const sessionData = await response.json()
+
+        console.log('AuthContext: Server session data:', sessionData)
+        dispatch(syncSession(sessionData))
+      } catch (error) {
+        console.error('AuthContext: Failed to sync session:', error)
+        dispatch(syncSession(null))
+      }
     }
-  }, [session, status])
+
+    initializeAuth()
+  }, [dispatch])
 
   const requireAuth = (callback) => {
     if (!user) {

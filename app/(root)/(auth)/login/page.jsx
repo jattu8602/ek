@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { signIn, getSession, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { useDispatch } from 'react-redux'
+import { syncSession } from '@/store/authSlice'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,6 +28,7 @@ export default function LoginPage() {
   const [isRedirecting, setIsRedirecting] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const dispatch = useDispatch()
   const { data: session, status } = useSession()
 
   // Redirect if already logged in
@@ -151,15 +154,40 @@ export default function LoginPage() {
     }
   }
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     setIsLoading(true)
     setError('')
 
-    // Let NextAuth handle the complete OAuth flow with redirect
-    signIn('google', {
-      callbackUrl: '/',
-      redirect: true,
-    })
+    try {
+      // Let NextAuth handle OAuth
+      const result = await signIn('google', {
+        callbackUrl: '/',
+        redirect: false,
+      })
+
+      if (result?.ok) {
+        // Fetch session from server and update Redux
+        const response = await fetch('/api/auth/session')
+        const sessionData = await response.json()
+
+        console.log('Login: Syncing Redux with session:', sessionData)
+        dispatch(syncSession(sessionData))
+
+        // Redirect based on role
+        if (sessionData?.user?.role === 'ADMIN') {
+          router.push('/admin')
+        } else {
+          router.push('/')
+        }
+      } else if (result?.error) {
+        setError(`Failed to sign in: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('Google sign in error:', error)
+      setError('Failed to sign in with Google. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   // Show loading state while checking authentication

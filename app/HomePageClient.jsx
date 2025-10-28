@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ArrowRight, Star, Truck, Shield, Clock, Loader2 } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { useAuthSession } from '@/hooks/useAuthSession'
+import { useSelector } from 'react-redux'
 import {
   Carousel,
   CarouselContent,
@@ -27,24 +27,24 @@ const categoryImages = {
 
 export default function HomePageClient({ featuredProducts }) {
   const { t } = useLanguage()
-  const { session, status } = useAuthSession()
+  const { user, isAuthenticated, loading } = useSelector((state) => state.auth)
   const [allProducts, setAllProducts] = useState(featuredProducts || [])
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [hasMoreProducts, setHasMoreProducts] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
 
-  // Log session status for OAuth callback debugging
+  // Log auth status from Redux
   useEffect(() => {
-    if (status === 'authenticated' && session) {
-      console.log('Home page - User session active:', {
-        email: session.user?.email,
-        role: session.user?.role,
-        id: session.user?.id,
+    if (isAuthenticated && user) {
+      console.log('Home page - User authenticated (Redux):', {
+        email: user?.email,
+        role: user?.role,
+        id: user?.id,
       })
-    } else if (status === 'unauthenticated') {
-      console.log('Home page - No active session')
+    } else if (!loading && !isAuthenticated) {
+      console.log('Home page - No active session (Redux)')
     }
-  }, [session, status])
+  }, [user, isAuthenticated, loading])
 
   // Load more products for carousels
   const loadMoreProducts = async () => {

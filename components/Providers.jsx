@@ -2,6 +2,9 @@
 
 import { useState, useMemo } from 'react'
 import { SessionProvider } from 'next-auth/react'
+import { Provider as ReduxProvider } from 'react-redux'
+import { PersistGate } from 'redux-persist/integration/react'
+import { store, persistor } from '@/store/store'
 import { Toaster } from '@/components/ui/toaster'
 import { Toaster as Sonner } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -28,24 +31,28 @@ export default function Providers({ children }) {
   const memoizedChildren = useMemo(() => children, [children])
 
   return (
-    <SessionProvider
-      refetchInterval={0}
-      refetchOnWindowFocus={true}
-      basePath="/api/auth"
-    >
-      <QueryClientProvider client={queryClient}>
-        <LanguageProvider>
-          <AuthProvider>
-            <CartProvider>
-              <TooltipProvider>
-                {memoizedChildren}
-                <Toaster />
-                <Sonner />
-              </TooltipProvider>
-            </CartProvider>
-          </AuthProvider>
-        </LanguageProvider>
-      </QueryClientProvider>
-    </SessionProvider>
+    <ReduxProvider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <SessionProvider
+          refetchInterval={0}
+          refetchOnWindowFocus={true}
+          basePath="/api/auth"
+        >
+          <QueryClientProvider client={queryClient}>
+            <LanguageProvider>
+              <AuthProvider>
+                <CartProvider>
+                  <TooltipProvider>
+                    {memoizedChildren}
+                    <Toaster />
+                    <Sonner />
+                  </TooltipProvider>
+                </CartProvider>
+              </AuthProvider>
+            </LanguageProvider>
+          </QueryClientProvider>
+        </SessionProvider>
+      </PersistGate>
+    </ReduxProvider>
   )
 }
