@@ -31,6 +31,11 @@ export default function LoginPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (status === 'authenticated' && session) {
+      console.log('User authenticated, redirecting...', {
+        email: session.user?.email,
+        role: session.user?.role,
+        id: session.user?.id,
+      })
       if (session.user?.role === 'ADMIN') {
         router.push('/admin')
       } else {
@@ -38,6 +43,63 @@ export default function LoginPage() {
       }
     }
   }, [session, status, router])
+
+  // Handle OAuth callback - check for session after redirect
+  useEffect(() => {
+    const handleOAuthCallback = async () => {
+      // Check if we're coming back from OAuth (URL might have params)
+      const urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.get('callbackUrl') || window.location.pathname === '/') {
+        console.log('OAuth callback detected, checking session...')
+
+        // Retry mechanism to get session after OAuth
+        let retries = 0
+        const maxRetries = 5
+
+        const checkSession = async () => {
+          try {
+            const freshSession = await getSession()
+            console.log('Fresh session check:', {
+              session: !!freshSession,
+              user: freshSession?.user?.email,
+              role: freshSession?.user?.role,
+              retry: retries + 1,
+            })
+
+            if (freshSession?.user) {
+              console.log('OAuth callback - user authenticated:', {
+                email: freshSession.user?.email,
+                role: freshSession.user?.role,
+              })
+              if (freshSession.user?.role === 'ADMIN') {
+                router.push('/admin')
+              } else {
+                router.push('/')
+              }
+              return
+            }
+
+            retries++
+            if (retries < maxRetries) {
+              console.log(
+                `Session not ready, retrying in 1s... (${retries}/${maxRetries})`
+              )
+              setTimeout(checkSession, 1000)
+            } else {
+              console.log('Max retries reached, session not available')
+            }
+          } catch (error) {
+            console.error('Error checking session:', error)
+          }
+        }
+
+        // Start checking after a small delay
+        setTimeout(checkSession, 500)
+      }
+    }
+
+    handleOAuthCallback()
+  }, [status, session, router])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
