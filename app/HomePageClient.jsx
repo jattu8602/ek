@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ArrowRight, Star, Truck, Shield, Clock, Loader2 } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useSession } from 'next-auth/react'
 import {
   Carousel,
   CarouselContent,
@@ -26,10 +27,24 @@ const categoryImages = {
 
 export default function HomePageClient({ featuredProducts }) {
   const { t } = useLanguage()
+  const { data: session, status } = useSession()
   const [allProducts, setAllProducts] = useState(featuredProducts || [])
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [hasMoreProducts, setHasMoreProducts] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
+
+  // Log session status for OAuth callback debugging
+  useEffect(() => {
+    if (status === 'authenticated' && session) {
+      console.log('Home page - User session active:', {
+        email: session.user?.email,
+        role: session.user?.role,
+        id: session.user?.id,
+      })
+    } else if (status === 'unauthenticated') {
+      console.log('Home page - No active session')
+    }
+  }, [session, status])
 
   // Load more products for carousels
   const loadMoreProducts = async () => {
