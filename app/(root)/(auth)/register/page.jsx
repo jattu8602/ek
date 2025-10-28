@@ -127,47 +127,15 @@ export default function RegisterPage() {
     }
   }
 
-  const handleGoogleSignUp = async () => {
+  const handleGoogleSignUp = () => {
     setIsLoading(true)
     setError('')
 
-    try {
-      const result = await signIn('google', {
-        callbackUrl: '/',
-        redirect: false,
-      })
-
-      if (result?.error) {
-        console.error('Google sign up error:', result.error)
-        if (result.error === 'OAuthAccountNotLinked') {
-          setError(
-            'This Google account is not linked to any user account. Please contact support or try a different account.'
-          )
-        } else if (result.error === 'OAuthCallback') {
-          setError(
-            'OAuth callback error. Please check your Google OAuth configuration.'
-          )
-        } else {
-          setError(`Failed to sign up with Google: ${result.error}`)
-        }
-      } else if (result?.ok) {
-        // Get the session to check user role
-        const session = await getSession()
-        console.log('Sign up successful, redirecting...', {
-          role: session?.user?.role,
-        })
-        if (session?.user?.role === 'ADMIN') {
-          router.push('/admin')
-        } else {
-          router.push('/')
-        }
-      }
-    } catch (err) {
-      console.error('Google sign up error:', err)
-      setError('Failed to sign up with Google. Please try again.')
-    } finally {
-      setIsLoading(false)
-    }
+    // Let NextAuth handle the complete OAuth flow with redirect
+    signIn('google', {
+      callbackUrl: '/',
+      redirect: true,
+    })
   }
 
   // Show loading state while checking authentication
