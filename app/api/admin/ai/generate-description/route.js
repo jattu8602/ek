@@ -8,6 +8,9 @@ const prisma = new PrismaClient()
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
 
+
+
+
 export async function POST(request) {
   try {
     // Check if user is authenticated and is admin
